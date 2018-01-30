@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	
+</head>
+<body>
+	<style>
+		html,body{
+			height: 500px;
+		}
+		div{
+			border: solid 0px black;
+			padding:0px;
+			margin:0px;
+		}		
+
+		.wrapper1,.wrapper2,.wrapper3{
+			width:400px;
+			background-color: green;
+		}
+
+		.left1,.left2,.left3{
+			float:left;
+			width:300px;
+			height:100px;
+			background-color: blue;
+		}
+		/*以增加border，就会把right（红色）挤到下一行去了*/
+		.left2,.left3{
+			border-width: 10px;
+		}
+		/*用了IE盒子模型就让宽度包含了border，就不会挤到另外一行去了*/
+		.left3{
+			box-sizing:border-box;
+		}
+
+		.right1,.right2,.right3{
+			float:left;
+			height:100px;
+			width:100px;
+			background-color: red;
+		}
+		.clearfix:after{
+			content: ".";
+			display: block;
+			height: 0;
+			clear: both;
+			visibility: hidden;
+		}
+	</style>
+	<div class="wrapper1 clearfix">
+		<div class="left1"></div>
+		<div class="right1"></div>
+	</div>
+	
+	<p></p>
+	<div class="wrapper2 clearfix">
+		<div class="left2"></div>
+		<div class="right2"></div>
+	</div>
+
+	<p></p>
+	<div class="wrapper3 clearfix">
+		<div class="left3"></div>
+		<div class="right3"></div>
+	</div>
+
+</body>
+</html>

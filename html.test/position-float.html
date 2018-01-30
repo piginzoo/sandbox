@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		div{
+			border: 1px solid;
+			
+		}
+		.parent{
+			width: 800px;
+		}		
+		.child{
+			width: 250px;
+			height: 200px;
+			background-color: green;
+		}
+		.child_left{
+			width: 100px;
+			height: 100px;
+			float:left;
+			background-color: red;
+		}
+	</style>
+</head>
+<body>
+	<div class="parent">
+		<!-- 这个div float:left后，他脱离文档流了，其他div会占据他的位置，
+		但是其他div的文本并不能侵占他的位置，我也不知道为何 -->
+		<div class="child_left">
+			i am left
+		</div>
+		<div class="child_left">
+			<p>
+				brother1,brother1,brother1,brother1,brother1
+			</p>
+		</div>
+		<div class="child">
+			brother2
+		</div>
+		<div class="child">
+			brother3
+		</div>
+
+	</div>
+	<p></p>
+
+</body>
+</html>

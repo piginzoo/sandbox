@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		.d1,.d2,.d{
+			
+		}
+		.d1,.d2{
+			height: 100px;
+			width: 200px;
+			float:left;
+		}
+		.d{
+			border: 1px black solid;
+			height: auto;
+			/*为什么需要overflow,div就不塌陷了？*/
+			overflow: hidden; 	
+		}
+		.d1{
+			background: red;
+		}
+
+		.d2{
+			background: blue;
+		}
+	</style>
+</head>
+<body>
+	<div class="d">
+		<div class="d1"></div>
+		<div class="d2"></div>
+		
+	</div> 
+	
+</body>
+</html>

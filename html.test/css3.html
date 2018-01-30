@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	
+</head>
+<body>
+
+<style>
+		.tab_content {
+			position: absolute;
+		}
+		#tab1:target, #tab2:target, #tab3:target {
+			z-index:1;
+			color:red;
+		}		
+</style>	
+<ul class="tabs">
+	<li><a href="#tab1">标签一</a></li>
+	<li><a href="#tab2">标签二</a></li>
+	<li><a href="#tab3">标签三</a></li>
+</ul>
+<div id="tab1" class="tab_content">
+	<!--tabed content -->
+</div>
+<div id="tab2" class="tab_content">
+	<!--tabed content-->
+</div>
+<div id="tab3" class="tab_content">
+	<!--tabed content-->
+</div>
+
+
+
+<style>
+	.half_cycle{
+		background-color: red;
+		width: 100px;
+		height: 50px;
+		border-radius: 50px 50px 0px 0px;
+	}
+	.quarter_cycle{
+		background-color: red;
+		width: 100px;
+		height: 100px;
+		border-radius: 0px 0px 100px 0px;
+	}
+	.quarter_cycle{
+		background-color: red;
+		width: 100px;
+		height: 100px;
+		border-radius: 0px 0px 100px 0px;
+	}
+	.elipse{
+		background-color: red;
+		width: 50px;
+		height: 100px;
+		border-radius: 50px / 100px;
+	}
+
+</style>
+<div class="half_cycle"> 
+</div>
+<br>
+<div class="quarter_cycle"/>
+</div>
+<div class="elipse"/>
+</div>
+
+<style>
+	.cycle{
+		width:  500px;
+		height: 500px;
+		border-radius: 250px 250px 250px 250px;
+		overflow: hidden;
+	}
+	.box-shadow{
+		box-shadow: 0px 0px 30px 10px gray;
+	}
+	.shadow1{
+		width:  100px;
+		height: 100px;
+		background-color: red;
+		box-shadow: 0 10px 10px blue;	
+	}
+</style>
+<div class="cycle box-shadow">
+	<img src="test.png" alt="">
+</div>
+<div class="shadow1">
+</div>
+
+
+<style>
+	.inset-cycle{
+		width:  500px;
+		height: 500px;
+		border-radius: 250px 250px 250px 250px;
+		overflow: hidden;
+		box-shadow: inset 0px 0px 50px 20px gray;
+	}
+
+	img{
+		position: relative;
+		z-index: -1;
+	}
+</style>
+<div class="inset-cycle">
+	<img src="test.png" alt="">
+</div>
+</body>
+</html>

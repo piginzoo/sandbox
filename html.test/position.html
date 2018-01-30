@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		div{
+			border: 1px solid;
+			display: inline-block;
+		}
+		.parent{
+			width: 500px;
+		}		
+		.child{
+			width: 200px;
+			height: 100px;
+			background-color: green;
+		}
+		.brother{
+			background-color: red;	
+		}
+		p{
+			padding: 0px;
+			background-color: gray;	
+		}
+	</style>
+</head>
+<body>
+
+	<div class="parent">
+		static
+		<div class="child brother ">
+			brother
+		</div>
+		<div class="child">
+			static
+		</div>
+	</div>
+	<p></p>
+	<hr>
+	<p></p>
+	
+
+	<style>
+		.div_parent1{
+			position:static;
+		}
+		.div_child1{
+			position:absolute;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent1 parent">
+		static1
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child1 child">
+			absolute1
+		</div>
+	</div>
+	<p></p>
+
+
+	<style>
+		.div_parent2{
+			position:static;
+		}
+		.div_child2{
+			position:relative;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent2 parent">
+		static2
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child2 child">
+			relative2
+		</div>	
+	</div>
+	<p></p>
+
+	<style>
+		.div_parent3{
+			position:relative;
+		}
+		.div_child3{
+			position:absolute;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent3 parent">
+		relative3
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child3 child">
+			absolute3
+		</div>
+	</div>
+	<p></p>
+
+	<style>
+		.div_parent4{
+			position:relative;
+		}
+		.div_child4{
+			position:relative;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent4 parent">
+		absolute4
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child4 child">
+			absolute4
+		</div>
+	</div>
+	<p></p>
+
+	<style>
+		.div_parent5{
+			position:absolute;
+		}
+		.div_child5{
+			position:absolute;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent5 parent">
+		absolute5
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child5 child">
+			absolute5
+		</div>
+	</div>
+	<p></p>	
+
+	<style>
+		.div_parent6{
+			position:absolute;
+		}
+		.div_child6{
+			position:relative;
+			top:20px;
+			left:20px;
+		}
+	</style>
+	<div class="div_parent6 parent">
+		absolute6
+		<div class="brother child">
+			brother
+		</div>
+		<div class="div_child6 child">
+			relative6
+		</div>
+	</div>
+	<p></p>
+
+</body>
+</html>

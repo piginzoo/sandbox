@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	
+</head>
+<body>
+	<style>
+		div{
+			border: solid 10px black;
+			padding:20px;
+			margin:20px;
+			width: 200px;
+			height: 200px;
+		}		
+
+		.div1{
+			background-color: red;
+			border-color: black;
+		}
+		.div11{
+			padding:20px;
+			margin:0px;
+			width: 100%;
+			height: 100%;
+			background-color: red;
+			/*box-sizing:border-box;*/
+		}
+		.div111{
+			border: 2px solid black;
+			padding:0px;
+			margin:0px;
+			width: 100%;
+			height: 100%;
+			background-color: green;
+		}
+
+		.div2{
+			background-color: blue;
+			border-color: black;
+			box-sizing:border-box;
+		}
+
+		span{
+			position:absolute;
+			color: white;
+		}
+	</style>	
+	<div class="div1">
+		<span>div1</span>
+		<div class="div11">
+			<span>div11</span>
+			<div class="div111">
+				<span>div111</span>
+			</div>
+		</div>
+	</div>
+	<div class="div2">
+		div2		
+	</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		.parent{
+			background-color: gray;
+			border: 1px solid;
+		}
+		.block_none{
+			width: 200px;
+			height: 100px;
+			background-color: green;
+			/*display: none;*/
+		}
+		.invisiable{
+			width: 200px;
+			height: 100px;
+			background-color: green;
+			/*visibility: hidden;*/
+		}
+	</style>
+</head>
+<body>
+	<div class="parent">
+		none
+		<div class="block_none" id="block_none"></div>
+	</div>
+	<div class="parent">
+		hidden
+		<div class="invisiable" id="invisiable"></div>
+	</div>
+	<button onclick="hidden_them();">藏起来</button>
+	<button onclick="show_them();">显示起来</button>
+	<script>
+	function hidden_them () {
+		var block_none = document.getElementById("block_none");
+		block_none.style.display = "none";
+		var invisiable = document.getElementById("invisiable");
+		invisiable.style.visibility = "hidden";
+	}	
+	function show_them () {
+		var block_none = document.getElementById("block_none");
+		block_none.style.display = "block";
+		var invisiable = document.getElementById("invisiable");
+		invisiable.style.visibility = "visible";
+	}	
+
+	</script>
+</body>
+</html>
