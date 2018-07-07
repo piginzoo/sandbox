@@ -1,5 +1,7 @@
 a = None
 
+
+
 def test():
 	if a == None: print "i ma none"
 	a = "aaaaa"

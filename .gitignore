@@ -1,3 +1,7 @@
+python/.idea/
+greedai/rawdata/
+jvm/out/
+jvm/.idea/
 html.test/node_modules/
 opencv/out/
 .DS_Store
