@@ -14,6 +14,8 @@ sys.setdefaultencoding('utf-8')
 def get_info(person_node):
 	name_node = person_node.find('a',class_="turnto")
 	name = name_node.get_text()
+	name = name.replace(","," ")
+
 
 	info_node = person_node.find('td',class_="intro")
 	info_text = info_node.get_text()
@@ -90,7 +92,10 @@ for file in files:
 			}
 			list.append(one_person_full_info)
 
-result_file = open("result.csv","w")
+result_file = open("prepdata/executive_prep.csv","w")
+
+result_file.write('name,sex,age,company_id,title')
+result_file.write("\n")
 
 for one in list:
 	result_file.write(one['name'])

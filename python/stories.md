@@ -11,7 +11,7 @@
 * inform{"phone":"13910994900"}
     - utter_contact_later   
     - utter_thanks
-* goodbye
+* goodbye   
     - utter_goodbye
 
 ## Generated Story - 1
@@ -232,46 +232,6 @@
 * deny
     - utter_goodbye
     - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
 ## Generated Story -7935032963430063621
 * 
     - utter_greet
@@ -290,46 +250,7 @@
 * deny
     - utter_goodbye
     - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
-## Generated Story 1907331831373691920
-    - utter_contact_later
-    - utter_ask_morehelp
-* deny
-    - utter_goodbye
-    - export
-## Generated Story -1049048378236462436
-* deny
-    - utter_goodbye
-    - export
+
     
 ## Generated Story 2403656652831192242
 * greet
@@ -410,4 +331,3 @@
 * goodbye
     - utter_goodbye
     - export
-

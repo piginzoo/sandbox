@@ -1,5 +1,10 @@
+
+python/log/
+face-recognition/faces/
+ocr/samples/
 python/.idea/
 greedai/rawdata/
+greedai/neo4j-database/
 jvm/out/
 jvm/.idea/
 html.test/node_modules/
