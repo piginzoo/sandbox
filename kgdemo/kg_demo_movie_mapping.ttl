@@ -1,0 +1,375 @@
+@prefix map: <#> .
+@prefix db: <> .
+@prefix vocab: <vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+@prefix : <http://www.kgdemo.com#> .
+
+map:database a d2rq:Database;
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql:///kg_demo_movie";
+	d2rq:username "root";
+	d2rq:password "123456";
+	jdbc:autoReconnect "true";
+	jdbc:zeroDateTimeBehavior "convertToNull";
+	.
+
+# Table credit_report_parsed
+map:credit_report_parsed a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "credit_report_parsed/@@credit_report_parsed.credit_id|urlify@@";
+	d2rq:class :credit_report_parsed;
+	d2rq:classDefinitionLabel "credit_report_parsed";
+	.
+map:credit_report_parsed__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property rdfs:label;
+	d2rq:pattern "credit_report_parsed #@@credit_report_parsed.credit_id@@";
+	.
+map:credit_report_parsed_credit_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_credit_id;
+	d2rq:propertyDefinitionLabel "credit_report_parsed credit_id";
+	d2rq:column "credit_report_parsed.credit_id";
+	.
+map:credit_report_parsed_report_no a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_report_no;
+	d2rq:propertyDefinitionLabel "credit_report_parsed report_no";
+	d2rq:column "credit_report_parsed.report_no";
+	.
+map:credit_report_parsed_query_time a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_query_time;
+	d2rq:propertyDefinitionLabel "credit_report_parsed query_time";
+	d2rq:column "credit_report_parsed.query_time";
+	.
+map:credit_report_parsed_report_time a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_report_time;
+	d2rq:propertyDefinitionLabel "credit_report_parsed report_time";
+	d2rq:column "credit_report_parsed.report_time";
+	d2rq:datatype xsd:date;
+	.
+map:credit_report_parsed_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_name;
+	d2rq:propertyDefinitionLabel "credit_report_parsed name";
+	d2rq:column "credit_report_parsed.name";
+	.
+map:credit_report_parsed_id_type a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_id_type;
+	d2rq:propertyDefinitionLabel "credit_report_parsed id_type";
+	d2rq:column "credit_report_parsed.id_type";
+	.
+map:credit_report_parsed_is_married a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_is_married;
+	d2rq:propertyDefinitionLabel "credit_report_parsed is_married";
+	d2rq:column "credit_report_parsed.is_married";
+	.
+map:credit_report_parsed_record_public a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_public;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_public";
+	d2rq:column "credit_report_parsed.record_public";
+	.
+map:credit_report_parsed_record_owe_tax a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_owe_tax;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_owe_tax";
+	d2rq:column "credit_report_parsed.record_owe_tax";
+	.
+map:credit_report_parsed_record_judge a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_judge;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_judge";
+	d2rq:column "credit_report_parsed.record_judge";
+	.
+map:credit_report_parsed_record_execute a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_execute;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_execute";
+	d2rq:column "credit_report_parsed.record_execute";
+	.
+map:credit_report_parsed_record_punish a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_punish;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_punish";
+	d2rq:column "credit_report_parsed.record_punish";
+	.
+map:credit_report_parsed_record_owe_telecom a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_record_owe_telecom;
+	d2rq:propertyDefinitionLabel "credit_report_parsed record_owe_telecom";
+	d2rq:column "credit_report_parsed.record_owe_telecom";
+	.
+map:credit_report_parsed_person_query_num a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_person_query_num;
+	d2rq:propertyDefinitionLabel "credit_report_parsed person_query_num";
+	d2rq:column "credit_report_parsed.person_query_num";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_org_query_num a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_org_query_num;
+	d2rq:propertyDefinitionLabel "credit_report_parsed org_query_num";
+	d2rq:column "credit_report_parsed.org_query_num";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num1 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num1;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num1";
+	d2rq:column "credit_report_parsed.summary_num1";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num2 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num2;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num2";
+	d2rq:column "credit_report_parsed.summary_num2";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num3 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num3;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num3";
+	d2rq:column "credit_report_parsed.summary_num3";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num4 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num4;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num4";
+	d2rq:column "credit_report_parsed.summary_num4";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num5 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num5;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num5";
+	d2rq:column "credit_report_parsed.summary_num5";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num6 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num6;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num6";
+	d2rq:column "credit_report_parsed.summary_num6";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num7 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num7;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num7";
+	d2rq:column "credit_report_parsed.summary_num7";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num8 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num8;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num8";
+	d2rq:column "credit_report_parsed.summary_num8";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num9 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num9;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num9";
+	d2rq:column "credit_report_parsed.summary_num9";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num10 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num10;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num10";
+	d2rq:column "credit_report_parsed.summary_num10";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num11 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num11;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num11";
+	d2rq:column "credit_report_parsed.summary_num11";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num12 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num12;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num12";
+	d2rq:column "credit_report_parsed.summary_num12";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num13 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num13;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num13";
+	d2rq:column "credit_report_parsed.summary_num13";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num14 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num14;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num14";
+	d2rq:column "credit_report_parsed.summary_num14";
+	d2rq:datatype xsd:integer;
+	.
+map:credit_report_parsed_summary_num15 a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:credit_report_parsed;
+	d2rq:property :credit_report_parsed_summary_num15;
+	d2rq:propertyDefinitionLabel "credit_report_parsed summary_num15";
+	d2rq:column "credit_report_parsed.summary_num15";
+	d2rq:datatype xsd:integer;
+	.
+
+# Table genre
+map:genre a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "genre/@@genre.genre_id@@";
+	d2rq:class :genre;
+	d2rq:classDefinitionLabel "genre";
+	.
+map:genre__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genre;
+	d2rq:property rdfs:label;
+	d2rq:pattern "genre #@@genre.genre_id@@";
+	.
+map:genre_genre_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genre;
+	d2rq:property :genre_genre_id;
+	d2rq:propertyDefinitionLabel "genre genre_id";
+	d2rq:column "genre.genre_id";
+	d2rq:datatype xsd:integer;
+	.
+map:genre_genre_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:genre;
+	d2rq:property :genre_genre_name;
+	d2rq:propertyDefinitionLabel "genre genre_name";
+	d2rq:column "genre.genre_name";
+	.
+
+# Table movie
+map:movie a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "movie/@@movie.movie_id@@";
+	d2rq:class :movie;
+	d2rq:classDefinitionLabel "movie";
+	.
+map:movie__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property rdfs:label;
+	d2rq:pattern "movie #@@movie.movie_id@@";
+	.
+map:movie_movie_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_movie_id;
+	d2rq:propertyDefinitionLabel "movie movie_id";
+	d2rq:column "movie.movie_id";
+	d2rq:datatype xsd:integer;
+	.
+map:movie_movie_title a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_movie_title;
+	d2rq:propertyDefinitionLabel "movie movie_title";
+	d2rq:column "movie.movie_title";
+	.
+map:movie_movie_introduction a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_movie_introduction;
+	d2rq:propertyDefinitionLabel "movie movie_introduction";
+	d2rq:column "movie.movie_introduction";
+	.
+map:movie_movie_rating a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_movie_rating;
+	d2rq:propertyDefinitionLabel "movie movie_rating";
+	d2rq:column "movie.movie_rating";
+	d2rq:datatype xsd:double;
+	.
+map:movie_movie_release_date a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_movie_release_date;
+	d2rq:propertyDefinitionLabel "movie movie_release_date";
+	d2rq:column "movie.movie_release_date";
+	.
+
+# Table movie_to_genre (n:m)
+map:movie_to_genre__link a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :movie_to_genre;
+	d2rq:refersToClassMap map:genre;
+	d2rq:join "movie_to_genre.movie_id => movie.movie_id";
+	d2rq:join "movie_to_genre.genre_id => genre.genre_id";
+	.
+
+# Table person
+map:person a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "person/@@person.person_id@@";
+	d2rq:class :person;
+	d2rq:classDefinitionLabel "person";
+	.
+map:person__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property rdfs:label;
+	d2rq:pattern "person #@@person.person_id@@";
+	.
+map:person_person_id a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_id;
+	d2rq:propertyDefinitionLabel "person person_id";
+	d2rq:column "person.person_id";
+	d2rq:datatype xsd:integer;
+	.
+map:person_person_birth_day a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_birth_day;
+	d2rq:propertyDefinitionLabel "person person_birth_day";
+	d2rq:column "person.person_birth_day";
+	.
+map:person_person_death_day a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_death_day;
+	d2rq:propertyDefinitionLabel "person person_death_day";
+	d2rq:column "person.person_death_day";
+	.
+map:person_person_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_name;
+	d2rq:propertyDefinitionLabel "person person_name";
+	d2rq:column "person.person_name";
+	.
+map:person_person_english_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_english_name;
+	d2rq:propertyDefinitionLabel "person person_english_name";
+	d2rq:column "person.person_english_name";
+	.
+map:person_person_biography a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_biography;
+	d2rq:propertyDefinitionLabel "person person_biography";
+	d2rq:column "person.person_biography";
+	.
+map:person_person_birth_place a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:person;
+	d2rq:property :person_person_birth_place;
+	d2rq:propertyDefinitionLabel "person person_birth_place";
+	d2rq:column "person.person_birth_place";
+	.
+
+# Table person_to_movie (n:m)
+map:person_to_movie__link a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:movie;
+	d2rq:property :person_to_movie;
+	d2rq:refersToClassMap map:person;
+	d2rq:join "person_to_movie.movie_id => movie.movie_id";
+	d2rq:join "person_to_movie.person_id => person.person_id";
+	.
+

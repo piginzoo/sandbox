@@ -1,0 +1,12 @@
+match (e:employee),(e:employee)-[:所属部门]-(d:department)
+with e,d
+optional match (d:department)-[:在群里]-(qq:qq_group)
+optional match (d:department)-[:在群里]-(wechat:wechat_group)
+where
+	e.email='chuangliu18'
+return              
+e.name as name,             
+e.email as email,             
+d.name as department,              
+qq.name as qq_group,              
+wechat.name as wechat_group;

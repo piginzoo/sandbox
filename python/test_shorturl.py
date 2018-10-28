@@ -38,4 +38,4 @@ def send(apiUrl):
 
 if __name__ == "__main__":
     init_4_debug()
-    print send("http://opcenter.creditease.corp/index.html#/monitorFlow/flowDetail?workOrderId=00EC2F262FCA49CFB8529C5BC315BD42&alarmId=86A034B317734471990381EB6C744D66&workOrderTitle=【订单超时】结算平台订单超时预警邮件&workOrderNumber=20180604123715003583&workOrderStateCode=UNTREATED&importantLevelCode=IMPORTANT&businessSystemCode=NEW_SETTLEMENT&disposeResultCode&ruleTypeCode=TRADE_OVERTIME&pstateCode=UNTREATED&bussysCode=NEW_SETTLEMENT&levelCode=IMPORTANT")
+    print send("http://opcenter.xxx.corp/index.html#/monitorFlow/flowDetail?workOrderId=00EC2F262FCA49CFB8529C5BC315BD42&alarmId=86A034B317734471990381EB6C744D66&workOrderTitle=【订单超时】结算平台订单超时预警邮件&workOrderNumber=20180604123715003583&workOrderStateCode=UNTREATED&importantLevelCode=IMPORTANT&businessSystemCode=NEW_SETTLEMENT&disposeResultCode&ruleTypeCode=TRADE_OVERTIME&pstateCode=UNTREATED&bussysCode=NEW_SETTLEMENT&levelCode=IMPORTANT")
