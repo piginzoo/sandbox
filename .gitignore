@@ -1,4 +1,7 @@
-
+__pycache__/
+*.pyc
+coolq/coolq.air/
+coolq/coolq.pro/
 python/log/
 face-recognition/faces/
 ocr/samples/
