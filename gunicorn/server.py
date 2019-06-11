@@ -3,7 +3,7 @@ from flask import Flask,jsonify,request,abort,render_template
 import sys,logging,os
 from threading import current_thread
 import os
-
+from time import sleep
 app = Flask(__name__,root_path=".")
 app.jinja_env.globals.update(zip=zip)
 logger = logging.getLogger("WebServer")
@@ -11,6 +11,7 @@ logger = logging.getLogger("WebServer")
 @app.route("/")
 def index():
     pid = os.getpid()
+    sleep(1)
     return render_template('index.html',pid=pid)
 
 @app.route('/test',methods=['GET'])
