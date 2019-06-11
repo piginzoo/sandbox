@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>OCR结果展示</title>
+    </style>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+	</head>
+	<body>
+	  <h3>识别结果：</h3>
+	  <table>
+	  {% for text, small_img in zip(  result['text'] , result['small_images']  ):  %}
+		<tr>
+		  <td><img src="data:image/jpg;base64,{{small_img}}"></td>
+		  <td>{{text}}</td>
+		</tr>
+	  {% endfor %}
+	  </table>
+	  <h3>原图标识：</h3>
+	  <img src="data:image/jpg;base64,{{ result['image'] }}" width="80%">
+	</body>
+
+</html>
