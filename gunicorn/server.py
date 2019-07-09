@@ -7,19 +7,24 @@ from time import sleep
 app = Flask(__name__,root_path=".")
 app.jinja_env.globals.update(zip=zip)
 logger = logging.getLogger("WebServer")
+import random
 
+randint = random.random()
 @app.route("/")
 def index():
     pid = os.getpid()
-    sleep(1)
+    print(randint)
     return render_template('index.html',pid=pid)
 
 @app.route('/test',methods=['GET'])
 def test():
 
+    pid = os.getpid()
+    print(randint)
+    print(pid)
     aa = ['a2','a1']
     bb = ['b2','b1']
-    return render_template('test.html',aa=aa,bb=bb)
+    return render_template('test.html',aa=aa,bb=bb,randint=randint,pid=pid)
 
 
 def startup():

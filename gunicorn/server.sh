@@ -14,8 +14,9 @@ fi
 
 echo "启动 $WORKER_NUM 个 Web 服务进程..."
 
+#    --worker-class=gevent \
 CUDA_VISIBLE_DEVICES=0 gunicorn \
     --workers=$WORKER_NUM \
-    --worker-class=gevent \
     --bind=0.0.0.0:8080 \
+    --preload=true \
     server:app
