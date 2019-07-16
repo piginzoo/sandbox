@@ -1,0 +1,3 @@
+generate-mapping -u root -p 123456 -o kg_demo_movie_mapping.ttl jdbc:mysql:///kg_demo_movie
+dump-rdf  -o kg_demo_movie.nt kg_demo_movie_mapping.ttl
+tdbloader --loc="tdb" kg_demo_movie.nt
