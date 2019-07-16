@@ -4,9 +4,9 @@ import numpy as np
 import cv2
 
 def output_img(name,img):
-	cv2.imwrite('out/train5_'+name+'.jpg',img)
+	cv2.imwrite('out/yinxin_'+name+'.jpg',img)
 
-imgname = "type5/type5_train_1.png"
+imgname = "yixin2.jpg"
 img = cv2.imread(imgname, cv2.IMREAD_GRAYSCALE)
 print "img shape:",img.shape
 #print len(img)
@@ -35,6 +35,7 @@ output_img("binary_inv_img",t)
 for row in t:
 	print row
 
+#折腾这一圈，我理解是为了去掉横线，所以np.median(s) + 5的5，我理解就是线粗
 s = t.sum(axis=0)#210x64 ==> 210，降维，但是汇总了
 print "s.size",len(s) 
 print "二值化图像按列sum - s(是个图像数组):",s
@@ -45,10 +46,20 @@ print "(s > np.median(s) + 5)",(s > np.median(s) + 5)
 print "(s > np.median(s) + 5).nonzero()",(s > np.median(s)+5).nonzero()
 print "y1:",y1
 
-#折腾这一圈，我理解是为了去掉横线，所以np.median(s) + 5的5，我理解就是线粗
+
 
 y2 = (s > np.median(s) + 5).nonzero()[0][-1]
-x1, x2 = 0, 36
+x1, x2 = 0, 32 #高为32，是我打印出shape，观察出来的
+
+'''
+	---------------->(y)
+	|  x1/y1     y2
+	|    |-------|
+	|    |-------|
+	|	 x2
+	|(x)
+'''
+
 #img数组的分片很诡异，不是x1:y1,x2:y2，
 #而是这里写的x1:x2, y1:y2
 #所以，这里作者认为识别码的竖着的方向，也就是x方向是0，36，说白了就是竖着36个像素
@@ -58,45 +69,14 @@ x1, x2 = 0, 36
 im = img[x1:x2, y1 - 2:y2 + 3]
 print "im:",im.shape,im
 print "x1:y2,x1:y2:",x1,":",y1,",",x2,":",y2
-output_img("cut_out_img",im)
-#cv2.imshow("2 values",im)
-#cv2.waitKey(0)
+output_img("cut_out_img把数字图像扣出来",im)
+cv2.imshow("2 values",im)
+cv2.waitKey(0)
 
 #再黑白颠倒一下
 retval, im = cv2.threshold(im, 127, 255, cv2.THRESH_BINARY_INV)
 im0 = im[x1:x2, 1:-1]
 print "im0:",im0.shape,im0
 output_img("cut_out_inv_img",im0)
-#cv2.imshow("im0",im0)
-#cv2.waitKey(0)
-
-#把宽度撑成了100个像素
-if im.shape[1] < 100:
-    im = np.concatenate((im, np.zeros((36, 100 - im.shape[1]), dtype='uint8')), axis=1)
-else:
-    im = cv2.resize(im, (100, 36))
-print "new im:",im.shape,im
-output_img("width_100_img",im)
-
-I = im > 127 #得到一个是不是白的100x36的二维布尔矩阵，白的为true，黑的为false
-print "I:",I.shape,I
-#变成一个四维numpy.ndarray,为了和[图片个数？,image channel,height,width]
-I = I.astype(np.float32).reshape((1, 1, 36, 100)) 
-print "I:",I.shape,type(I),I
-
-# n = nb_model.predict_classes(I, verbose=0) + 4
-# im1 = np.zeros((36, 150), dtype=np.uint8)
-# im1[:, 10:im0.shape[1] + 10] = im0
-# step = im0.shape[1] / float(n)
-# center = [i + step / 2 for i in np.arange(0, im0.shape[1], step).tolist()]
-# imgs = np.zeros((n, 1, 36, 20), dtype=np.float32)
-# for i, c in enumerate(center):
-#     imgs[i, 0, :, :] = im1[:, c:c + 20]
-
-#classes = chars_model.predict_classes(imgs.astype('float32') / 255.0, verbose=0)
-#result = []
-#for c in classes:
-#     result.append(letters[c])
-# print(name, ''.join(result).upper())
-# f_csv.write(name + ',' + ''.join(result).upper() + '\n')
-
+cv2.imshow("im0黑白颠倒一下",im0)
+cv2.waitKey(0)
