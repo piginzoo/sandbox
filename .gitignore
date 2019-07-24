@@ -1,6 +1,11 @@
 ./html.test/node_modules
 __pycache__/
 *.pyc
+
+opencv/ocr/data
+opencv/ocr/out
+opencv/ocr/output
+
 coolq/coolq.air/
 coolq/coolq.pro/
 python/log/
