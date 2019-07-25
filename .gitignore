@@ -1,7 +1,9 @@
 ./html.test/node_modules
 __pycache__/
 *.pyc
-
+data/
+out/
+output/
 opencv/ocr/data
 opencv/ocr/out
 opencv/ocr/output

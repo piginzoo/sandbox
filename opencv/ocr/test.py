@@ -6,18 +6,23 @@ import matplotlib.pyplot as plt
 def ocr(img_name):
 	org_img = img = cv2.imread(img_name,0) #直接读为灰度图像
 
+	cv2.imwrite('out/原图.jpg',org_img)
+
 	# var kernal = Cv.CreateStructuringElementEx(5, 2, 1, 1, ElementShape.Rect);
 	#             Cv.Erode(gray, gray, kernal, 2);
-	kernel = np.ones((4,4),np.uint8)  
+	kernel = np.ones((5,5),np.uint8)  
 	img = cv2.erode(img,kernel,iterations = 1)            
-
+	cv2.imwrite('out/膨胀.jpg',img)
 
 	#简单滤波
 	ret1,th1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+	cv2.imwrite('out/二值-127.jpg',th1)
+
 	#Otsu 滤波
 	ret2,th2 = cv2.threshold(img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 	# print(th2)
-	cv2.imwrite('out/二值.jpg',th2)
+	cv2.imwrite('out/二值-OTSU.jpg',th2)
+
 
 	# https://blog.csdn.net/sunny2038/article/details/9170013
 	img = th2
@@ -26,8 +31,8 @@ def ocr(img_name):
 	absX = cv2.convertScaleAbs(x)# 转回uint8
 	absY = cv2.convertScaleAbs(y) 
 	dst = cv2.addWeighted(absX,0.5,absY,0.5,0)
-	cv2.imwrite('out/out21.jpg',absX)
-	cv2.imwrite('out/out22.jpg',absY)
+	cv2.imwrite('out/X-Sebel滤波.jpg',absX)
+	cv2.imwrite('out/Y-Sebel滤波.jpg',absY)
 	cv2.imwrite('out/Sebel滤波边缘监测.jpg',dst)
 
 
@@ -36,6 +41,7 @@ def ocr(img_name):
 	img = dst
 	black = cv2.cvtColor(np.zeros((img.shape[1], img.shape[0]), dtype=np.uint8), cv2.COLOR_GRAY2BGR)
 	image, contours, hier = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
 
 	hulls = []
 	for cnt in contours:
@@ -72,7 +78,7 @@ def ocr(img_name):
 	for rect in hulls:
 		# print(rect.shape)
 		cv2.polylines(img,[rect],True,(0,0,255))
-	cv2.imwrite('out/out4.jpg',img)
+	cv2.imwrite('out/最终探测结果.jpg',img)
 	return img
 
 def main():
