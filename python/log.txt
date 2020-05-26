@@ -1,0 +1,7 @@
+2019-12-10 19:42:58 - log - MainThread - INFO - file_logger
+2019-12-10 19:42:58 - log - MainThread - INFO - file_logger
+2019-12-10 19:42:58 - history - MainThread - INFO - history_logger
+2019-12-10 19:42:58 - history - MainThread - INFO - history_logger
+<StreamHandler <stdout> (DEBUG)>
+<TimedRotatingFileHandler /Users/piginzoo/workspace/sandbox/python/test.log (DEBUG)>
+xxxxxx

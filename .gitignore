@@ -1,13 +1,14 @@
 ./html.test/node_modules
 __pycache__/
 *.pyc
+.idea/
 data/
 out/
 output/
 opencv/ocr/data
 opencv/ocr/out
 opencv/ocr/output
-
+opencv/ocr/.idea/
 coolq/coolq.air/
 coolq/coolq.pro/
 python/log/

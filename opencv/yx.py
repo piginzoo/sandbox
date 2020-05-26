@@ -4,9 +4,9 @@ import numpy as np
 import cv2
 
 def output_img(name,img):
-	cv2.imwrite('out/yinxin_'+name+'.jpg',img)
+	cv2.imwrite('out/x_'+name+'.jpg',img)
 
-imgname = "yixin2.jpg"
+imgname = "y2.jpg"
 img = cv2.imread(imgname, cv2.IMREAD_GRAYSCALE)
 print "img shape:",img.shape
 #print len(img)
@@ -35,7 +35,6 @@ output_img("binary_inv_img",t)
 for row in t:
 	print row
 
-#折腾这一圈，我理解是为了去掉横线，所以np.median(s) + 5的5，我理解就是线粗
 s = t.sum(axis=0)#210x64 ==> 210，降维，但是汇总了
 print "s.size",len(s) 
 print "二值化图像按列sum - s(是个图像数组):",s
@@ -46,20 +45,10 @@ print "(s > np.median(s) + 5)",(s > np.median(s) + 5)
 print "(s > np.median(s) + 5).nonzero()",(s > np.median(s)+5).nonzero()
 print "y1:",y1
 
-
+#折腾这一圈，我理解是为了去掉横线，所以np.median(s) + 5的5，我理解就是线粗
 
 y2 = (s > np.median(s) + 5).nonzero()[0][-1]
-x1, x2 = 0, 32 #高为32，是我打印出shape，观察出来的
-
-'''
-	---------------->(y)
-	|  x1/y1     y2
-	|    |-------|
-	|    |-------|
-	|	 x2
-	|(x)
-'''
-
+x1, x2 = 0, 36
 #img数组的分片很诡异，不是x1:y1,x2:y2，
 #而是这里写的x1:x2, y1:y2
 #所以，这里作者认为识别码的竖着的方向，也就是x方向是0，36，说白了就是竖着36个像素

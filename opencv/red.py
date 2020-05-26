@@ -6,7 +6,7 @@ from skimage import io
 import cv2
 
 def output_img(name,img):
-	cv2.imwrite('out/yinxin_'+name+'.jpg',img)
+	cv2.imwrite('out/yin_'+name+'.jpg',img)
 
 imgname = "red.jpg"
 img = cv2.imread(imgname)

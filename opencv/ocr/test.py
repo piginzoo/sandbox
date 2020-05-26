@@ -1,27 +1,34 @@
 import cv2,numpy as np
 import matplotlib.pyplot as plt
 
- 
+'''
+1.膨胀
+2.二值
+3.边缘滤波
+4.查找轮廓
+5.包裹矩形
+''' 
 
 def ocr(img_name):
 	org_img = img = cv2.imread(img_name,0) #直接读为灰度图像
 
-	cv2.imwrite('out/原图.jpg',org_img)
+	print('debug/{}_原图.jpg'.format(img_name))
+	cv2.imwrite('debug/{}_原图.jpg'.format(img_name),org_img)
 
 	# var kernal = Cv.CreateStructuringElementEx(5, 2, 1, 1, ElementShape.Rect);
 	#             Cv.Erode(gray, gray, kernal, 2);
 	kernel = np.ones((5,5),np.uint8)  
 	img = cv2.erode(img,kernel,iterations = 1)            
-	cv2.imwrite('out/膨胀.jpg',img)
+	cv2.imwrite('debug/{}_膨胀.jpg'.format(img_name),img)
 
 	#简单滤波
 	ret1,th1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-	cv2.imwrite('out/二值-127.jpg',th1)
+	cv2.imwrite('debug/{}_二值-127.jpg'.format(img_name),th1)
 
 	#Otsu 滤波
 	ret2,th2 = cv2.threshold(img,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 	# print(th2)
-	cv2.imwrite('out/二值-OTSU.jpg',th2)
+	cv2.imwrite('debug/{}_二值-OTSU.jpg'.format(img_name),th2)
 
 
 	# https://blog.csdn.net/sunny2038/article/details/9170013
@@ -31,13 +38,14 @@ def ocr(img_name):
 	absX = cv2.convertScaleAbs(x)# 转回uint8
 	absY = cv2.convertScaleAbs(y) 
 	dst = cv2.addWeighted(absX,0.5,absY,0.5,0)
-	cv2.imwrite('out/X-Sebel滤波.jpg',absX)
-	cv2.imwrite('out/Y-Sebel滤波.jpg',absY)
-	cv2.imwrite('out/Sebel滤波边缘监测.jpg',dst)
+	cv2.imwrite('debug/{}_X-Sebel滤波.jpg'.format(img_name),absX)
+	cv2.imwrite('debug/{}_Y-Sebel滤波.jpg'.format(img_name),absY)
+	cv2.imwrite('debug/{}_Sebel滤波边缘监测.jpg'.format(img_name),dst)
 
 
 	# 输出的返回值，image是原图像、contours是图像的轮廓、hier是层次类型
 	# https://blog.csdn.net/HuangZhang_123/article/details/80511270
+	# 传入的是2值图，输出是轮廓的多边形数组
 	img = dst
 	black = cv2.cvtColor(np.zeros((img.shape[1], img.shape[0]), dtype=np.uint8), cv2.COLOR_GRAY2BGR)
 	image, contours, hier = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -69,7 +77,7 @@ def ocr(img_name):
 	    cv2.drawContours(black, [hull], -1, (0, 0, 255), 2)
 	    # print(hull.shape) [点数,1,2]
 	# print(hulls)
-	cv2.imwrite('out/文字探测结果.jpg',black)
+	cv2.imwrite('debug/{}_文字探测结果.jpg'.format(img_name),black)
 
 
 
@@ -78,7 +86,7 @@ def ocr(img_name):
 	for rect in hulls:
 		# print(rect.shape)
 		cv2.polylines(img,[rect],True,(0,0,255))
-	cv2.imwrite('out/最终探测结果.jpg',img)
+	cv2.imwrite('debug/{}_最终探测结果.jpg'.format(img_name),img)
 	return img
 
 def main():
@@ -103,5 +111,3 @@ if __name__ == '__main__':
 	else:
 		print("处理目录")
 		main()
-
-
