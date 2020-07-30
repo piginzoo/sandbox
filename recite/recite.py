@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 import json
-import httplib
+import requests
 import md5
 import urllib
 import random
@@ -27,15 +27,11 @@ def translate(word):
 
     try:
         
-        httpClient = httplib.HTTPConnection('api.fanyi.baidu.com')
-        httpClient.request('GET', myurl)
-
-        #response是HTTPResponse对象
-        response = httpClient.getresponse()
+        response = requests.get('api.fanyi.baidu.com'+myurl)
         # infirmary:{"from":"en","to":"zh","trans_result":[{"src":"infirmary","dst":"\u533b\u52a1\u5ba4"}]}
-        return json.loads(response.read())['trans_result'][0]['dst']
+        return json.loads(response.text['trans_result'][0]['dst'])
     except Exception as e:
-        print e
+        print(e)
         return "报错啦"
     finally:
         if httpClient:

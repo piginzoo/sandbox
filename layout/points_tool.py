@@ -22,9 +22,9 @@ def sort_rect_points(rect):
     top_point = rect[top_index]
     bottom_index = rect[:, 1].argmax()  # 最下面的点
     bottom_point = rect[bottom_index]
-    left_index = rect[:, 0].argmin()  # 最下面的点
+    left_index = rect[:, 0].argmin()  # 最左的点
     left_point = rect[left_index]
-    right_index = rect[:, 0].argmax()  # 最下面的点
+    right_index = rect[:, 0].argmax()  # 最右面的点
     right_point = rect[right_index]
     return np.array([top_point, right_point, bottom_point, left_point])
 
@@ -43,9 +43,9 @@ def caculate_rect_inclination(rect,image=None):
     for i in range(points_num):
         length.append(np.linalg.norm(rect[i] - rect[(i+1) % points_num]))
 
-    print(length)
+    # print(length)
     max_index = length.index(max(length))
-    print(max_index)
+    # print(max_index)
     p1 = rect[max_index]
     p2 = rect[(max_index + 1) % points_num]
 

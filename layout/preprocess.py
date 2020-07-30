@@ -46,9 +46,9 @@ def do_rotate(url, image):
     }
     # print(post_data)
     result = call(url, post_data)
-    print(result)
+    # print(result)
     image_roate = base64_to_image(result['image'])
-    print("调用完")
+    print("调用完旋转: code=%r,rotate=%r" %(result['code'],result['rotate']))
     return image_roate
 
 
@@ -56,6 +56,7 @@ def process(host):
     # 调用内部识别接口，先识别成txt的json
     input_dir = os.path.join("data", "raw")
     output_dir = os.path.join("data", "input")
+    json_dir = os.path.join("data", "output")
     image_names = os.listdir(input_dir)
 
     for img_name in image_names:
@@ -69,11 +70,11 @@ def process(host):
         json_data = do_ocr("http://ai.{}.corp//v2/ocr.ajax".format(host), image)
 
         output_image = os.path.join(output_dir, img_name)
-        output_json = os.path.join(output_dir, name + ".txt")
+        output_json = os.path.join(json_dir, name + ".txt")
         cv2.imwrite(output_image, image)
-        with open(output_json) as f:
-            f.write(json_data)
-        print("处理完：%s", img_name)
+        with open(output_json,"w") as f:
+            f.write(json.dumps(json_data))
+        print("处理完：%s" % img_name)
 
 
 if __name__ == "__main__":
