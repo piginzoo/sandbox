@@ -7,6 +7,10 @@ def load_data(path):
     output_dir = os.path.join(path, "output")
 
     image_names = os.listdir(input_dir)
+    # image_names= ["32461594351366_.pic_hd.jpg"]
+    # image_names= ["国寿祥瑞终身寿险.jpg"]
+    # image_names= ["健康源（2019）增强版终身重大疾病保险..jpg"]
+    image_names= ["国寿祥瑞终身寿险.jpg"]
     images = []
     all_pos = []
     all_txt = []
@@ -38,4 +42,4 @@ def load_data(path):
         all_pos.append(np.array(one_image_pos))
         all_bboxes.append(bboxes)
 
-    return images, all_pos, all_txt, all_bboxes
+    return image_names, images, all_pos, all_txt, all_bboxes

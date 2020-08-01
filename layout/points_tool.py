@@ -65,8 +65,6 @@ def caculate_rect_inclination(rect,image=None):
 
 # 按照矩形中心点，顺时针旋转a（弧度）：rect[4,2], center[2]
 def rotate_rect_by_center(rect, radian):
-    return rect
-
     """
     a表示矩形的旋转角度，为弧度。
     rect为矩形4点坐标
