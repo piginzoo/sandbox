@@ -10,3 +10,9 @@ def ignore_symbol(sentence):
         if i != -1: continue
         result += one
     return result
+
+def remove_pos(poses, pos):
+    for __pos in poses:
+        if (__pos==pos).all():
+            poses.remove(__pos)
+            return pos

@@ -1,4 +1,5 @@
 import math, numpy as np, cv2, logging
+from shapely.geometry import *
 
 logger = logging.getLogger(__name__)
 
@@ -31,36 +32,128 @@ def sort_rect_points(rect):
 
 # 计算一个矩形的倾斜角，是按照水平+顺时针计算的，
 # 例如：结果为30度，意味着这个三角形从水平方向，顺时针转了30度
-def caculate_rect_inclination(rect,image=None):
-    assert rect.shape == (4, 2), str(rect)
-    points_num = len(rect)  # 虽然可以直接写4，还是尽量灵活一些，万一未来要改成多边形呢
-
-    # 先按照最高点，然后顺时针对点进行排序
-    # rect = sort_rect_points(rect)
-
-    # 计算矩形各边长度
-    length = []
-    for i in range(points_num):
-        length.append(np.linalg.norm(rect[i] - rect[(i+1) % points_num]))
-
-    # print(length)
-    max_index = length.index(max(length))
-    # print(max_index)
-    p1 = rect[max_index]
-    p2 = rect[(max_index + 1) % points_num]
-
-    logger.debug("找到矩形最长的边：%r=>%r", p1.tolist(), p2.tolist())
-    if image is not None:
-        cv2.line(image,tuple(p1.tolist()),tuple(p2.tolist()),color=(0,0,255),thickness=3)
-    k = (p1[1] - p2[1]) / (p1[0] - p2[0])
-
+def caculate_rect_inclination(rect):
+    line1, _ = find_longer_2_lines_of_bbox(rect)
+    k = line1[2]
     arc = math.atan(k)
     if math.isnan(arc):
         arc = math.radians(90)
     degree = math.degrees(arc)
     logger.debug("矩形倾斜角度为：%r度，弧度值为：%f", degree, arc)
-
     return arc
+
+
+def test1():
+    polygon = [[40, 20], [150, 50], [240, 130], [80, 120]]
+    shapely_poly = Polygon(polygon)
+
+    line = [(10, 20), (220, 180)]
+    shapely_line = LineString(line)
+
+    # intersection_line = list(shapely_poly.intersection(shapely_line).coords)
+    # print(intersection_line.area)
+
+    splited1,splited2 = split(shapely_poly,shapely_line)
+    area1 = splited1.area
+    area2 = splited2.area
+
+
+    if area1>area2:
+        big_split_polygon = splited1.exterior.coords
+    else:
+        big_split_polygon = splited2.exterior.coords
+    # print(list(big_split_polygon))
+    big_split_polygon = np.array(list(big_split_polygon),np.int32)
+
+# line1，line2是一个组平行线，line形如[p1,p2,k]，像一个手电筒射出的平行光柱
+# 这个函数用来计算，目标bbox被这个光柱找到的面积比，也即是被平行线切除的面积 / 他自己的面积
+def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=10000):
+    p1, p2, k1 = line1
+    # 选择一个适度的右方探测x
+    detect_x = p1[0] + image_width / 2
+
+    # 先用平行线围出一个四边形
+    b1 = p1[1] - k1 * p1[0]  # y=kx+b => b=y-kx
+    p_end1 = [detect_x, k1 * detect_x + b1]
+    p3, p4, k2 = line2
+    b2 = p3[1] - k2 * p3[0]  # y=kx+b => b=y-kx
+    p_end2 = [detect_x, k2 * detect_x + b2]
+
+    # 计算手电筒四边形和bbox的交面积
+    spotlight_poly = [p1, p_end1, p_end2, p3]
+    # print(spotlight_poly)
+    # print("bbox.pos")
+    # print(bbox.pos)
+    spotlight_poly = Polygon(spotlight_poly)
+    poly = Polygon(bbox.pos)
+    intersection_area = spotlight_poly.intersection(poly).area
+    bbox_area = poly.area
+
+    ratio = intersection_area / bbox_area
+    # logger.debug("intersection_area:%f", intersection_area)
+    # logger.debug("bbox_area:%f", bbox_area)
+    logger.debug("行识别：辐射bbox[%r]辐射目标bbox[%r]，辐射面积占比[%.2f]", current_bbox, bbox, ratio)
+    return ratio
+
+
+# 找到bbox的两条接近水平的两条线
+def find_approximate_horizontal_2_lines_of_bbox(bbox):
+    pos = bbox.pos
+    assert pos.shape == (4, 2), str(pos)
+    points_num = len(pos)  # 虽然可以直接写4，还是尽量灵活一些，万一未来要改成多边形呢
+
+    horizontal_lines = []
+    for i in range(points_num):
+        p1 = pos[i]
+        p2 = pos[(i + 1) % points_num]
+        if (p1[0] - p2[0]) == 0:
+            logger.warning("行识别：此框的点[%r,%r]形成的为竖直的", p1, p2)
+            k = 100000  # 随便是个大数
+        else:
+            k = (p1[1] - p2[1]) / (p1[0] - p2[0])
+        if abs(k) <= 1:
+            logger.debug("行识别：此框的点[%r,%r]形成的|斜率|<1(45度以内)：%.2f", p1.tolist(), p2.tolist(), k)
+            horizontal_lines.append([p1, p2, k])
+    logger.debug("行识别：为bbox[%r]找到[%d]条接近水平的边", bbox, len(horizontal_lines))
+    return horizontal_lines
+
+
+# 找到bbox的两条长边的直线方程，bbox一定是个矩形，但是可能是倾斜的
+def find_longer_2_lines_of_bbox(bbox):
+    pos = bbox.pos
+    assert pos.shape == (4, 2), str(pos)
+    points_num = len(pos)  # 虽然可以直接写4，还是尽量灵活一些，万一未来要改成多边形呢
+
+    # 先按照最高点，然后顺时针对点进行排序
+    # pos = sort_pos_points(pos)
+
+    # 计算矩形各边长度
+    length = []
+    for i in range(points_num):
+        length.append(np.linalg.norm(pos[i] - pos[(i + 1) % points_num]))
+
+    # 找到最长的边
+    max_index = length.index(max(length))
+
+    # 找到最长的边对应的2个点
+    p1 = pos[max_index]
+    p2 = pos[(max_index + 1) % points_num]
+    # print("p1,p2:",p1,"/",p2)
+    # print(bbox.txt.strip()=="")
+    # print("bbox:[%r]" % len(bbox.txt))
+    if (p1[0] - p2[0]) == 0:
+        logger.warning("行识别：此框[%r]长边为竖直的")
+        return
+    k1 = (p1[1] - p2[1]) / (p1[0] - p2[0])
+
+    # 找到另外一条长边的2个点
+    p3 = pos[(max_index + 2) % points_num]
+    p4 = pos[(max_index + 3) % points_num]
+    (p3[0] - p4[0])
+    k2 = (p3[1] - p4[1]) / (p3[0] - p4[0])
+
+    logger.debug("行识别：为bbox[%r]找到两条长边[k1/k2][%.2f,%.2f]", bbox, k1, k2)
+    return [p1, p2, k1], [p3, p4, k2]
 
 
 # 按照矩形中心点，顺时针旋转a（弧度）：rect[4,2], center[2]
@@ -90,29 +183,30 @@ def rotate_rect_by_center(rect, radian):
 
 
 def rotate_rect_to_horizontal(rect, image=None):
-    rotated_arc = caculate_rect_inclination(rect,image)
+    rotated_arc = caculate_rect_inclination(rect, image)
     if rotated_arc == 0:
         logger.debug("矩形倾斜角度为0，无需旋转")
         return rect
-    return rotate_rect_by_center(rect,-rotated_arc)
+    return rotate_rect_by_center(rect, -rotated_arc)
+
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG,
                         handlers=[logging.StreamHandler()])
 
     image = np.full([400, 400, 3], 255, np.uint8)
-    rect = np.array([[50, 50],[150, 50],[150, 100],[50, 100]])
+    rect = np.array([[50, 50], [150, 50], [150, 100], [50, 100]])
     cv2.polylines(image, [rect], isClosed=True, color=(255, 0, 0), thickness=2)
     rect = rotate_rect_by_center(rect, radian=math.radians(30))
-    logger.debug("旋转30度后的坐标为：%r",rect)
+    logger.debug("旋转30度后的坐标为：%r", rect)
     rotated_arc = caculate_rect_inclination(rect)
     cv2.polylines(image, [rect], isClosed=True, color=(0, 0, 255), thickness=2)
 
     # 把倾斜30度的矩形框，摆平 红色=>绿色
     rect = np.array([[72, 128],
-               [155, 178],
-               [130, 221],
-               [34, 171]])
+                     [155, 178],
+                     [130, 221],
+                     [34, 171]])
     cv2.polylines(image, [rect], isClosed=True, color=(0, 0, 255), thickness=2)
     rect = rotate_rect_to_horizontal(rect)
     cv2.polylines(image, [rect], isClosed=True, color=(0, 255, 0), thickness=2)

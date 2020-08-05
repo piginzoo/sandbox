@@ -76,15 +76,17 @@ def process():
         one_image_bboxes = all_bboxes[i]
         key_values = []  # 所有的key：value对，1：N的关系，可能有多个value bboxes
 
-        bad_boxes = exclude_empty_text_bboxes(one_image_bboxes)
-        good_boxes, __bad_boxes, mean = exclude_boxes_by_statistics(one_image_bboxes, sigma_num=2)
+        one_image_bboxes, bad_boxes = exclude_empty_text_bboxes(one_image_bboxes)
+        good_boxes, __bad_boxes, mean, _ ,_ = exclude_boxes_by_statistics(one_image_bboxes, sigma_num=2)
+        print(type(bad_boxes))
+        print(type(__bad_boxes))
         bad_boxes+=__bad_boxes
         one_image_bboxes=good_boxes
 
         # 找出所有的key bboxes
         for _bbox in one_image_bboxes:
             text = _bbox.txt
-            field = bbox.find_similar_key(text)
+            field = bbox.find_similar_key(text,"key-value")
             if field:
                 logger.debug("此bbox[%s]匹配文本为[%s]的key[%s]", text, field['text'], field['key'])
                 _bbox.field = field  # <------- 把field，类似于meta放置入bbox肚子里

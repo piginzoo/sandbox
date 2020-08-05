@@ -4,6 +4,8 @@ import Levenshtein
 from debug import *
 from fields import *
 
+logger = logging.getLogger(__name__)
+
 
 class KeyValue():
     def __init__(self, key_bbox):
@@ -17,15 +19,15 @@ class KeyValue():
         assert field is not None
         key_text = key_bbox.txt
 
-        if key_text == field['text']: return # 相等不处理
+        if key_text == field['text']: return  # 相等不处理
 
         # 剥离key中可能包含的values，形成一个虚拟Bbox
         key_index = key_text.find(field['text'])
-        if key_index!=-1:
-            left_text = key_text[key_index+len(field['text']):]
+        if key_index != -1:
+            left_text = key_text[key_index + len(field['text']):]
             if len(left_text) > 0 and (left_text[0] == ":" or left_text[0] == "："):
                 left_text = left_text[1:]
-            logger.debug("从keybox中分离出value:%s",left_text)
+            logger.debug("从keybox中分离出value:%s", left_text)
             self.value_boxes.append(BBox(np.zeros((4, 2)), left_text))
 
     def append_value_box(self, value):
@@ -47,6 +49,7 @@ class KeyValue():
     def __eq__(self, other):
         return self.key_bbox == other.key_bbox
 
+
 class BBox():
     def __init__(self, pos, txt):
         if type(pos) == list: pos = np.array(pos)
@@ -56,10 +59,10 @@ class BBox():
         self.field = None
 
     def __str__(self):
-        return self.txt #+ " " + str(self.pos.tolist())
+        return self.txt  # + " " + str(self.pos.tolist())
 
     def __repr__(self):
-        return self.txt #+ " " + str(self.pos.tolist())
+        return self.txt  # + " " + str(self.pos.tolist())
 
     def __eq__(self, other):
         # 如果自己本身就是个无效坐标（虚拟bbox），就跟谁也不相同
@@ -67,9 +70,31 @@ class BBox():
             logger.debug("我是一个虚拟bbox")
             return False
         if (self.pos == other.pos).all():
-            logger.debug("other[%s]和我[%s]相等",other.txt,self.txt)
+            logger.debug("other[%s]和我[%s]相等", other.txt, self.txt)
             return True
         return False
+
+    def left(self):
+        return self.pos[:, 0].min()
+
+    def right(self):
+        return self.pos[:, 0].max()
+
+    def top(self):
+        return self.pos[:, 1].min()
+
+    def bottom(self):
+        return self.pos[:, 1].max()
+
+    def left_of(self, other):
+        my_right = self.pos[:, 0].min()  # 我的最右面
+        his_left = other.pos[:, 0].min()  # 你的最左面
+        return his_left > my_right
+
+    # TODO：有个开源项目：http://www.angusj.com/delphi/clipper.php ，可以参考并利用
+    def is_overlap(self, other):
+        self.horizontal_distance(other) == 0 and \
+        self.vertical_distance(other) == 0
 
     def edit_distance(self, text):
         return Levenshtein.distance(text, self.txt)
@@ -108,12 +133,16 @@ class BBox():
         y_height_ratio = min(y_height1, y_height2) / max(y_height1, y_height2)
         return y_height_ratio
 
-
     def is_keybbox(self):
-        return not self.field==None
+        return not self.field == None
 
-    def is_the_pos(self,pos):
+    def is_the_pos(self, pos):
         return (self.pos == pos).all()
+
+    def center(self):
+        x = (self.pos[:, 0].min() + self.pos[:, 0].max()) / 2
+        y = (self.pos[:, 1].min() + self.pos[:, 1].max()) / 2
+        return (int(x), int(y))
 
 
 # 尝试找到key的bbox们：
@@ -121,7 +150,7 @@ class BBox():
 # - 2个字相同
 # - 3个字以上必须编辑距离差1
 # - 或者以key关键字开头
-def find_similar_key(text):
+def find_similar_key(text, key_type):
     text = text.strip()
 
     if (len(text)) <= 1:
@@ -143,7 +172,6 @@ def find_similar_key(text):
     #     logger.debug("此文本[%s]包含key[%s]",text,found_field['text'])
     #     return found_field
 
-
     # 为了只识别有效字符，简化文本
     import utils
     text = utils.ignore_symbol(text)
@@ -152,6 +180,9 @@ def find_similar_key(text):
     min_el = 10000
     similar_field = None
     for field in FEILDS:
+
+        if type(field['type']) == list and key_type not in field['type']: continue
+        if type(field['type']) == str and field['type'] != key_type: continue
 
         # 如果长度是2，要精确匹配
         if (len(text)) == 2:
@@ -176,13 +207,14 @@ def find_similar_key(text):
     logger.debug("此文本[%s]不像所有的key", text)
     return None
 
+
 # 通过坐标找到bbox，我们认为坐标是唯一标识
 def find_bbox_by_pos(bboxes, pos):
-    assert pos.shape == (4, 2), pos.shape
     for bbox in bboxes:
         if (pos == bbox.pos).all():
             return bbox
     return None
+
 
 # 把bbox们转成位置数组pos们
 def get_poses(bboxes):
@@ -191,18 +223,17 @@ def get_poses(bboxes):
         poses.append(bbox.pos)
     return np.array(poses)
 
+
 # 按照pos的数组，去过滤掉bboxes
-def filter_bboxes_by_poses(bboxes,poses):
+def filter_bboxes_by_poses(bboxes, poses):
     left_bboxes = []
-    for bbox in bboxes:
+    for _bbox in bboxes:
         for pos in poses:
-            if bbox.is_the_pos(pos):
-                left_bboxes.append(bbox)
+            if _bbox.is_the_pos(pos):
+                left_bboxes.append(_bbox)
                 break
-    logger.debug("总bboxes[%d]个，过滤poses[%d]个，过滤后剩余bboxes[%d]个",len(bboxes),len(poses),len(left_bboxes))
+    logger.debug("总bboxes[%d]个，过滤poses[%d]个，过滤后剩余bboxes[%d]个", len(bboxes), len(poses), len(left_bboxes))
     return left_bboxes
-
-
 
 
 if __name__ == "__main__":
