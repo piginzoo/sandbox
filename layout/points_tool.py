@@ -107,7 +107,7 @@ def find_approximate_horizontal_2_lines_of_bbox(bbox):
         p1 = pos[i]
         p2 = pos[(i + 1) % points_num]
         if (p1[0] - p2[0]) == 0:
-            logger.warning("行识别：此框的点[%r,%r]形成的为竖直的", p1, p2)
+            logger.debug("行识别：此框的点[%r,%r]形成的为竖直的", p1, p2)
             k = 100000  # 随便是个大数
         else:
             k = (p1[1] - p2[1]) / (p1[0] - p2[0])
@@ -142,7 +142,7 @@ def find_longer_2_lines_of_bbox(bbox):
     # print(bbox.txt.strip()=="")
     # print("bbox:[%r]" % len(bbox.txt))
     if (p1[0] - p2[0]) == 0:
-        logger.warning("行识别：此框[%r]长边为竖直的")
+        logger.debug("行识别：此框[%r]长边为竖直的")
         return
     k1 = (p1[1] - p2[1]) / (p1[0] - p2[0])
 

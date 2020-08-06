@@ -7,16 +7,18 @@ def load_data(path):
     output_dir = os.path.join(path, "output")
 
     image_names = os.listdir(input_dir)
-    # image_names= ["32461594351366_.pic_hd.jpg"]
-    # image_names= ["国寿祥瑞终身寿险.jpg"]
-    # image_names= ["健康源（2019）增强版终身重大疾病保险..jpg"]
-    # image_names= ["国寿祥瑞终身寿险.jpg"]
-    # image_names= ["鑫盛12（996）.jpg"]
-    # image_names= ["百万守护重大疾病保险.jpg"]
-    # image_names= ["鑫利（936）.jpg"]
-    # image_names= ["信泰爱驾宝两全保险.jpg"]
-    # image_names= ["工银安盛人寿御立方三号两全保险.jpg"]
-    # image_names= ["百万任我行（1149）.jpg"]
+
+    image_names=[]
+    # image_names.append("32461594351366_.pic_hd.jpg")
+    # image_names.append("国寿祥瑞终身寿险.jpg")
+    # image_names.append("健康源（2019）增强版终身重大疾病保险..jpg")
+    # image_names.append("国寿祥瑞终身寿险.jpg")
+    # image_names.append("鑫盛12（996）.jpg")
+    # image_names.append("百万守护重大疾病保险.jpg")
+    # image_names.append("鑫利（936）.jpg")
+    image_names.append("信泰爱驾宝两全保险.jpg")
+    # image_names.append("工银安盛人寿御立方三号两全保险.jpg")
+    # image_names.append("百万任我行（1149）.jpg")
     images = []
     all_pos = []
     all_txt = []

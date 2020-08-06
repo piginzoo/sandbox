@@ -39,14 +39,14 @@ def process(image, bboxes):
         title_key_ratio = key_counter / len(bboxes_of_row)
 
         if title_key_ratio >= 0.5 and len(bboxes_of_row)>=3:
-            logger.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            logger.info("这行有[%d]个标题，超过3个，60%%的标题都是key，我有理由相信他是表格标题行:",len(bboxes_of_row))
-            logger.info(bboxes_of_row)
+            logger.debug("这行有[%d]个标题，超过3个，60%%的标题都是key，我有理由相信他是表格标题行:",len(bboxes_of_row))
 
             __table = table.table_builder(bboxes_of_row,all_row_boxes[i+1:],average_bbox_height,image_width, image_height)
-            logger.info("||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||")
-            # logger.info(__table   )
-            logger.info("||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||+||")
+            logger.info("表格：")
+            logger.info("=============================================================================================================================")
+            logger.info("\t|\t".join([ str(header_bbox) for header_bbox in bboxes_of_row]))
+            logger.info(str(__table))
+            logger.info("=============================================================================================================================")
         else:
             logger.debug("此行[%d]个框,[%d]是潜在表标题,比例[%.2f]",len(bboxes_of_row),key_counter,title_key_ratio)
 
