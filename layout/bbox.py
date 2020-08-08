@@ -8,27 +8,14 @@ logger = logging.getLogger(__name__)
 
 
 class KeyValue():
-    def __init__(self, key_bbox):
+
+    def __init__(self, key_bbox, parent_bbox=None):  # 可能是一个keybox里面的子keybox
         self.value_boxes = []
         self.key_bbox = key_bbox
-        self.process_key(key_bbox)
-
-    # 由于key可能存在连着value的情况，需要解析一下
-    def process_key(self, key_bbox):
-        field = key_bbox.field
-        assert field is not None
-        key_text = key_bbox.txt
-
-        if key_text == field['text']: return  # 相等不处理
-
-        # 剥离key中可能包含的values，形成一个虚拟Bbox
-        key_index = key_text.find(field['text'])
-        if key_index != -1:
-            left_text = key_text[key_index + len(field['text']):]
-            if len(left_text) > 0 and (left_text[0] == ":" or left_text[0] == "："):
-                left_text = left_text[1:]
-            logger.debug("从keybox中分离出value:%s", left_text)
-            self.value_boxes.append(BBox(np.zeros((4, 2)), left_text))
+        if parent_bbox:
+            self.parent_bbox = parent_bbox
+        else:
+            self.parent_bbox = key_bbox
 
     def append_value_box(self, value):
         if type(value) == list:
@@ -38,7 +25,7 @@ class KeyValue():
 
     def __to_string(self):
         value = "".join([bbox.txt for bbox in self.value_boxes])
-        return "[%s] %s".format(self.key, value)
+        return "{}:{}".format(self.key_bbox, value)
 
     def __str__(self):
         return self.__to_string()
@@ -51,6 +38,11 @@ class KeyValue():
 
 
 class BBox():
+
+    # 用于创建一个虚拟bbox
+    def create_virtual_bbox(text):
+        return BBox(np.zeros((4, 2)), text)
+
     def __init__(self, pos, txt):
         if type(pos) == list: pos = np.array(pos)
         assert pos.shape == (4, 2)
@@ -150,6 +142,7 @@ class BBox():
 # - 2个字相同
 # - 3个字以上必须编辑距离差1
 # - 或者以key关键字开头
+# key_type："key-value","table","key-value,table" 3种
 def find_similar_key(text, key_type):
     text = text.strip()
 
@@ -172,7 +165,7 @@ def find_similar_key(text, key_type):
     #     logger.debug("此文本[%s]包含key[%s]",text,found_field['text'])
     #     return found_field
 
-    # 为了只识别有效字符，简化文本
+    # 为了只识别有效字符，简化文本，去掉所有的标点符号
     import utils
     text = utils.ignore_symbol(text)
 
@@ -181,8 +174,8 @@ def find_similar_key(text, key_type):
     similar_field = None
     for field in FEILDS:
 
-        if type(field['type']) == list and key_type not in field['type']: continue
-        if type(field['type']) == str and field['type'] != key_type: continue
+        key_type_list = key_type.split(",")
+        if not field['type'] == key_type_list: continue
 
         # 如果长度是2，要精确匹配
         if (len(text)) == 2:

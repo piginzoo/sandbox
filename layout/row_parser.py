@@ -25,7 +25,7 @@ def calculate_2_row_bboxes_distance(row_bboxes1,row_bboxes2):
     y2 = get_bboxes_fit_line_middle_y(row_bboxes2)
     return y2 - y1
 
-def split_high_rows_2(all_rows, all_rows_bboxes, row_avarage_height, image_width):
+def split_high_rows_2(all_rows,all_rows_bboxes, row_avarage_height, image_width):
     new_all_rows_bboxes = []
 
     LINE_RATIO = 1
