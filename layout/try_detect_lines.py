@@ -177,35 +177,37 @@ def extract_key_values(good_bboxes, image,key_type):
             key_value.key_bbox.txt,
             key_value.key_bbox.field['text']))
 
-def extract_key_values2(all_row_bboxes,good_bboxes, image,key_type):
-    # 找出所有的强key-value，所谓"强"，就是他肯定不会出现在table中的bboxes
-    key_values = []  # 所有的key：value对，1：N的关系，可能有多个value bboxes
+import parse_key_values
+def extract_key_values2(all_row_bboxes, image,key_type):
+    # 用来存放这样行的所有的key-values
+    all_key_values = []
     for one_row_bboxes in all_row_bboxes:
+        one_row_key_values = []
         for _bbox in one_row_bboxes:
-            text = _bbox.txt
-            field = bbox.find_similar_key(text, key_type)
-            if field:
-                logger.debug("此bbox[%s]匹配文本为[%s]的key[%s]", text, field['text'], field['key'])
-                _bbox.field = field  # <------- 把field，类似于meta放置入bbox肚子里
-                key_values.append(bbox.KeyValue(_bbox))
-    # 先把key都从旧集合中删除掉
-    for key_value in key_values:
-        good_bboxes.remove(key_value.key_bbox)
-    # 为每个key去找value
-    for key_value in key_values:
-        key_bbox = key_value.key_bbox
-        logger.debug("处理其中的一个key：%s", key_bbox.txt)
 
-        value_bboxes = detect_value(good_bboxes, key_bbox)
-        if len(value_bboxes) == 0:
-            logger.debug("无法为它找到value")
-            continue
+            # 返回这个bbox对应的key-value对，最后还有个上一个key对应的value
+            key_values, previous_value_bbox = parse_key_values.process_bbox(_bbox,key_type)
 
-        logger.debug("!!!找到Key：%s ==> Value: %r", key_bbox.txt, value_bboxes)
+            if previous_value_bbox and len(row_key_values)==0:
+                logger.warn("不对啊，为这个value[%s]找不到前面的key啊",previous_value_bbox.txt)
+            if previous_value_bbox and len(row_key_values)>0:
+                previous_key_value = row_key_values[-1]
+                logger.debug("当前bbox[%r]包含上一个key[%r]的value[%r]",previous_value_bbox)
+                previous_key_value.append_value_box(previous_value_bbox)
 
-        key_value.value_bboxes += value_bboxes
-        for vb in value_bboxes:
-            good_bboxes.remove(vb)  # 把这个value_bbox从原始的bboxes集合中都删除掉
+            if not key_values: continue
+
+            one_row_key_values+=key_values
+
+
+
+        if len(one_row_key_values)>0:
+            logger.debug("这行原始bboxes包含%d个key-value",len(one_row_key_values))
+            all_key_values.append(one_row_key_values)
+            all_row_bboxes.remove(one_row_bboxes)
+        else:
+            logger.debug("这行原始bboxes不包含任何key-value")
+
 
     # 打印key value信息
     for key_value in key_values:

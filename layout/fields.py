@@ -90,6 +90,10 @@ FEILDS = [{
     "type": ["key-value"]
 },{
     "key": "生效日期",
+    "text": "保险生效日",
+    "type": ["key-value"]
+},{
+    "key": "生效日期",
     "text": "保险合同成立及生效日",
     "type": ["key-value"]
 },

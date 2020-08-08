@@ -75,18 +75,21 @@ def process_bbox(_bbox, key_type):
     #   "保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币"
     #    ^                  ^                      ^
     key_values = []
-    min_pos = -1
+    min_pos = 99999
     for i in range(len(filtered_matched_fields)):
         _matched_field,pos = filtered_matched_fields[i]
-        if pos>min_pos: min_pos=pos
-        if i+1 < len(filtered_matched_fields)-1:
+        if pos<min_pos: min_pos=pos
+
+        if i+1 < len(filtered_matched_fields):
             _, next_pos = filtered_matched_fields[i+1]
         else:
             next_pos = len(text)
+        logger.debug("从[%s]抽取一个key-value[%d->%d]:[%s]",text,pos,next_pos,text[pos:next_pos])
         key_value_text = text[pos:next_pos]
         _key_value = _process_one_key_text(_bbox,key_value_text,_matched_field)
         key_values.append(_key_value)
 
+    # print("min_pos:",min_pos)
     if min_pos>0:
         last_value_bboxes = BBox.create_virtual_bbox(text[:min_pos])
     else:
@@ -133,10 +136,10 @@ if __name__ == '__main__':
     # logger.debug("保险合同号:500505958548")
     # logger.debug(test_process_bbox("保险合同号:500505958548"))
     # logger.debug("保险合同号:3939393939保险生效日：2020年09月08日")
-    logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日"))
-    logger.debug("保险合同号:3939393939保险生效日：2020年09月08日货币单位")
+    # logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日"))
+    # logger.debug("保险合同号:3939393939保险生效日：2020年09月08日货币单位")
     # logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日货币单位"))
     # logger.debug("保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币")
     # logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币"))
-    # logger.debug("保险的合同号:500505958548")
-    # logger.debug(test_process_bbox("保险合同号:500505958548"))# 测试编辑距离为1的key
+    logger.debug("2020年3月3号保险的合同号:500505958548")
+    logger.debug(test_process_bbox("2020年3月3号保险合同号:500505958548"))# 测试编辑距离为1的key
