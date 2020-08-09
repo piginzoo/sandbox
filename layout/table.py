@@ -1,7 +1,7 @@
+import queue
 import logging
 import numpy as np
 from shapely.geometry import *
-import row_parser
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,12 @@ class Row:
 
     def add(self, column):
         self.columns.append(column)
+
+    def find_column(self, header_column):
+        for col in self.columns:
+            if col.header_column == header_column:
+                return col
+        return None
 
     def __str__(self):
         return "\t|\t".join([str(c) for c in self.columns])
@@ -53,6 +59,9 @@ class HeaderColumn:
     def __repr__(self):
         return str(self.header_bbox)
 
+    def __eq__(self, other):
+        return self.header_bbox == other.header_bbox
+
 
 class Table:
     """
@@ -80,19 +89,39 @@ class Table:
         return False
 
     def build(self, all_row_boxes, bbox_averate_height):
+
+        self.stack = queue.LifoQueue()
+
         # 逐行处理
+        row_detect_counter = 0
         for i in range(len(all_row_boxes) - 1):
             row_bboxes = all_row_boxes[i]
-            next_row_bboxes = all_row_boxes[i + 1]
-            if self.is_end(row_bboxes):
-                logger.debug("表识别：识别结束了，出现了结束行[%r]", row_bboxes)
+
+            # 最多探测3行
+            if row_detect_counter > 3:
+                logger.debug("表识别：行探测：已经向下探测了3行，都不是表格行，认为表格结束！")
                 break;
 
-            # 解析这一样
-            is_qualtified_row = self.parse_row(row_bboxes)
-            if not is_qualtified_row:
-                logger.debug("表识别：当前行[%r]已经不是表格行了，识别结束", row_bboxes)
+            if self.is_end(row_bboxes):
+                logger.debug("表识别：出现了结束行[%r]，认为表格结束了！", row_bboxes)
                 break;
+
+            # 解析这一行bboxes，看看是不是可以形成一个行Row
+            new_row = self.parse_row(row_bboxes)
+            # 如果这行是一行表数据，那么计数器重置，回过头出去之前积累的行数
+            if new_row:
+                current_row = new_row
+                row_detect_counter = 0  # 确认是新行后，探测一行的计数器重置
+                logger.debug("表识别：行识别：识别新行的后处理，把堆积的%d行表数据回填到表里", self.stack.qsize())
+                while not self.stack.empty():  # 把之前积累的行，都消化掉
+                    old_row_bboxes = self.stack.get()
+                    self.find_matched_bbox_for_header_column(current_row, old_row_bboxes)
+                    logger.debug("表识别：行识别：把堆积行bboxes数据[%r]回填到表里", old_row_bboxes)
+            # 如果这行不是表行数据
+            else:
+                logger.debug("表识别：当前行[%r]已经不是表格行了，暂时尝试放入stack", row_bboxes)
+                self.stack.put(row_bboxes)
+                row_detect_counter += 1
 
             # TODO: 这个下一步再考虑
             # is_qualtified_next_row = self.parse_row(next_row_bboxes)
@@ -116,7 +145,7 @@ class Table:
                 right = image_width
             else:
                 right = int((header_bboxes[i + 1].left() + header_bboxes[i].right()) / 2)
-            logger.debug("表识别：表头识别：拆分表头[左:%f],[右:%f],[上:%f],[下:%f]",left, right, top, image_heigth)
+            logger.debug("表识别：表头识别：拆分表头[左:%f],[右:%f],[上:%f],[下:%f]", left, right, top, image_heigth)
             _header_column = HeaderColumn(header_bboxes[i], left, right, top, image_heigth)
             header_columns.append(_header_column)
         logger.debug("表识别：表头识别：识别了表的表头[%d]列", len(header_columns))
@@ -125,29 +154,39 @@ class Table:
     # 来！我们来分析一个框是不是属于这个表格，属于那个列
     # 观察2-3行，如果都不是，就认为表格结束了
     def parse_row(self, row_bboxes):
-        logger.debug("表识别：行识别：开始识别这一行%r/%r",row_bboxes,self.header_columns)
+        logger.debug("表识别：行识别：开始识别这一行%r/%r", row_bboxes, self.header_columns)
 
         # 如何判断是不是一行，应该是凡是匹配度超过1半，
         # 那啥叫匹配度
-        matched_bbox_counter = 0
         row = Row()
-        for header_column in self.header_columns:
-            column = Column(header_column)
-            for bbox in row_bboxes:
-                if self.is_bbox_match_column(header_column, bbox):
-                    matched_bbox_counter += 1
-                    logger.debug("此bbox[%r]属于列[%r]",bbox,header_column)
-                    column.add(bbox)
-            logger.debug("加入一列：%s",str(column))
-            row.add(column)
+        matched_bbox_counter = self.find_matched_bbox_for_header_column(row, row_bboxes)
 
         # TODO 这个rule很重要:
         #   如果匹配的框数量大于1个，2+；并且，比例大于，
         if matched_bbox_counter > 1 and (matched_bbox_counter / len(self.header_columns)) > 0.4:
-            logger.debug("此行是表的数据行：%r",row)
+            logger.debug("此行是表的数据行：%r", row)
             self.rows.append(row)
-            return True
-        return False
+            return row
+        return None
+
+    def find_matched_bbox_for_header_column(self, row, row_bboxes):
+        matched_bbox_counter = 0
+        for header_column in self.header_columns:
+            column = row.find_column(header_column)
+            if not column:
+                column = Column(header_column)
+                row.add(column)
+                logger.debug("行识别：无法在行内找到标题列[%r]，创建之", header_column)
+            else:
+                logger.debug("行识别：在行内找到标题列[%r]，复用它", header_column)
+            for bbox in row_bboxes:
+                if self.is_bbox_match_column(header_column, bbox):
+                    matched_bbox_counter += 1
+                    logger.debug("此bbox[%r]属于列[%r]，把此bbox加入到这列", bbox, header_column)
+                    column.add(bbox)
+            logger.debug("加入一列：%s", str(column))
+
+        return matched_bbox_counter
 
     def is_bbox_match_column(self, header_column, bbox):
         bbox_poly = Polygon(bbox.pos)

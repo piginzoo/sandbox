@@ -12,9 +12,9 @@ from fields import *
 import utils
 
 
-def test_process_bbox(text):
-    key_value_list,last_value_bbox =  process_bbox(BBox.create_virtual_bbox(text),"key-value")
-    return key_value_list,last_value_bbox
+def test_process_bbox(text,key_type="key-value"):
+    key_value_list,last_value_bbox =  process_bbox(BBox.create_virtual_bbox(text),key_type)
+    return "Key/Value:{}, 上一个Key的Value:{}".format(key_value_list,last_value_bbox)
 
 # 解析一个bbox，由于key可能存在连着value的情况，需要解析一下
 #   "保险合同号:"
@@ -45,7 +45,7 @@ def process_bbox(_bbox, key_type):
     for field in FEILDS:
         # 看此key是不是需要被check的对象
         key_type_list = key_type.split(",")
-        if not field['type'] == key_type_list: continue
+        if not field['type'] == key_type_list: continue # key的类型必须一致，如果是key-value,table，两个都得对上
         # 关键词在中间的（注意，可能有多个）
         pos = text.find(field['text'])
         if pos!=-1:
@@ -107,7 +107,7 @@ def _process_one_key_text(_bbox,text,field):
     # 恰好只有key
     if text==field["text"]:
         logger.debug("[%s]就是个单纯的key",text)
-        return KeyValue(_bbox)
+        return KeyValue(_bbox,field)
 
     field_len = len(field["text"])
 
@@ -122,7 +122,7 @@ def _process_one_key_text(_bbox,text,field):
     value_bbox = BBox.create_virtual_bbox(value)
     logger.debug("最终的value是：%s",value)
 
-    key_value=KeyValue(key_bbox,_bbox)
+    key_value=KeyValue(key_bbox,field,_bbox)
     key_value.append_value_box(value_bbox)
     return key_value
 
@@ -141,5 +141,7 @@ if __name__ == '__main__':
     # logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日货币单位"))
     # logger.debug("保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币")
     # logger.debug(test_process_bbox("保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币"))
-    logger.debug("2020年3月3号保险的合同号:500505958548")
-    logger.debug(test_process_bbox("2020年3月3号保险合同号:500505958548"))# 测试编辑距离为1的key
+    # logger.debug("2020年3月3号保险的合同号:500505958548")
+    # logger.debug(test_process_bbox("2020年3月3号保险合同号:500505958548"))# 测试编辑距离为1的key
+    logger.debug("交费方式:年交")
+    logger.debug(test_process_bbox("交费方式:年交","key-value,table"))

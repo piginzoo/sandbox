@@ -70,7 +70,7 @@ def test1():
 def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=10000):
     p1, p2, k1 = line1
     # 选择一个适度的右方探测x
-    detect_x = p1[0] + image_width / 2
+    detect_x = p1[0] + image_width * 0.75
 
     # 先用平行线围出一个四边形
     b1 = p1[1] - k1 * p1[0]  # y=kx+b => b=y-kx
@@ -92,7 +92,7 @@ def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=1
     ratio = intersection_area / bbox_area
     # logger.debug("intersection_area:%f", intersection_area)
     # logger.debug("bbox_area:%f", bbox_area)
-    logger.debug("行识别：辐射bbox[%r]辐射目标bbox[%r]，辐射面积占比[%.2f]", current_bbox, bbox, ratio)
+    logger.debug("行识别：辐射bbox[%r][%f]辐射目标bbox[%r][%f]，辐射面积占比[%.2f]", current_bbox,intersection_area, bbox,bbox_area, ratio)
     return ratio
 
 

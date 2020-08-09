@@ -24,7 +24,7 @@ def debug(image, all_rows, all_row_bboxs, exclued_bboxes, image_width):
         else:
             color = COLOR_GREEN
 
-        logger.debug("打印行：此行%d个bbox", len(one_row_bboxes))
+        # logger.debug("打印行：此行%d个bbox", len(one_row_bboxes))
         for __bbox in one_row_bboxes:
             cv2.polylines(image, [__bbox.pos], isClosed=True, color=color, thickness=2)
         if len(one_row_bbox_centers) > 1:
@@ -35,16 +35,17 @@ def debug(image, all_rows, all_row_bboxs, exclued_bboxes, image_width):
 
         odd_row = bool(1 - odd_row)
 
-    overlay = image.copy()
-    all_rows = np.array(all_rows, np.int32)
-    for row in all_rows:  # row=[y1,y2]
-        y1 = min(row)
-        y2 = max(row)
-        overlay = cv2.rectangle(overlay, (10, y1), (image_width - 20, y2), COLOR_YELLOW, -1)
-    alpha = 0.1  # Transparency factor.
-    image = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
+    if all_rows is not None:
+        overlay = image.copy()
+        all_rows = np.array(all_rows, np.int32)
+        for row in all_rows:  # row=[y1,y2]
+            y1 = min(row)
+            y2 = max(row)
+            overlay = cv2.rectangle(overlay, (10, y1), (image_width - 20, y2), COLOR_YELLOW, -1)
+        alpha = 0.1  # Transparency factor.
+        image = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
 
-    if exclued_bboxes is not None:
+    if exclued_bboxes  is not None:
         for __box in exclued_bboxes:
             cv2.polylines(image, [__box.pos], isClosed=True, color=COLOR_RED, thickness=1)  # 异常框，红色
 

@@ -40,7 +40,7 @@ def split_high_rows_2(all_rows,all_rows_bboxes, row_avarage_height, image_width)
         # 如果这行在标准差的 LINE_RATIO 倍以内，就认为是正常行，不处理
         if row_height < LINE_RATIO * row_avarage_height:
             new_all_rows_bboxes.append(one_row_bboxes)
-            logger.debug("此行高[%f]在%f倍均高[%f]内，属于正常行", row_height, LINE_RATIO, LINE_RATIO * row_avarage_height)
+            logger.debug("此行[%r]高[%f]在%f倍均高[%f]内，属于正常行", one_row_bboxes,row_height, LINE_RATIO, LINE_RATIO * row_avarage_height)
             continue
 
         logger.debug("此行为超高行，好吧，我们来肢解他，他一共[%d]个bbox", len(one_row_bboxes))
@@ -203,20 +203,17 @@ def split_high_rows(rows, row_elements, row_avarage_height):
 
 def exclude_empty_text_bboxes(bboxes):
     exclued_bboxes = []
-    left_bboxes = []
     original_size = len(bboxes)
     for _bbox in bboxes:
         if _bbox.txt.strip() == "":
             logger.debug("此框识别文字为空，怒弃")
             exclued_bboxes.append(_bbox)
             bboxes.remove(_bbox)
-        else:
-            left_bboxes.append(_bbox)
     logger.debug("原bboxes[%d]个，删除了[%d]个空字符串的，还剩[%d]个",
                  original_size,
                  len(exclued_bboxes),
-                 len(left_bboxes))
-    return left_bboxes, exclued_bboxes
+                 len(bboxes))
+    return exclued_bboxes
 
 
 def exclude_boxes_by_statistics(bboxes, sigma_num=2):
@@ -229,6 +226,7 @@ def exclude_boxes_by_statistics(bboxes, sigma_num=2):
     bad_bboxes = bbox.filter_bboxes_by_poses(bboxes, bad_poses)
     logger.debug("原bboxes[%d]个，删除了[%d]个2sigma外的，还剩[%d]个",
                  len(bboxes), len(bad_poses), len(good_poses))
+    logger.debug("有问题的框：%r",bad_bboxes)
     return good_bboxes, bad_bboxes, mean, width, height
 
 
@@ -251,14 +249,12 @@ def exclude_1sigma(poses, sigma_num=2):
     min_height = mean - sigma_num * std
     logger.debug("%d个标准差下，最大高度为：%f，最小高度为：%f", sigma_num, max_height, min_height)
 
-    bad_heights_indices = np.where(np.logical_or(heights > 2 * mean, \
-                                                 heights < min_height, \
+    bad_heights_indices = np.where(np.logical_or(heights < min_height, \
                                                  heights > max_height))
     bad = [poses[i] for i in bad_heights_indices[0]]
 
     # TODO ??? 不知道为何"heights <= 2*mean"条件放最后，就无法起到过滤作用？！
-    good_heights_indices = np.where(np.logical_and(heights <= 2 * mean,
-                                                   heights <= max_height, \
+    good_heights_indices = np.where(np.logical_and(heights <= max_height, \
                                                    heights >= min_height))
     good = [poses[i] for i in good_heights_indices[0]]
 
@@ -324,8 +320,8 @@ def recognize_rough_row(bboxes, image_height):
             if y1 >= row[0] and y2 <= row[1]:
                 logger.debug("此bbox框[%r]投影在行内：y1[%d]>=row_y1[%d],y2[%d]<=row_y2[%d]:", bbox, y1, y2, row[0], row[1])
                 one_row_elements.append(bbox)
-                # logger.debug("这个框的投影在行内，归队TA，并在总集合中剔除他:y1(%d)>row_y1(%d),y2(%d)<row_y2(%d)" % (y1,row[0],y2,row[1]))
         row_elements.append(one_row_elements)
+
 
     # rows和row_elements行数是一样的，对应行就是对应的框们
     logger.debug("识别出%d行", len(row_elements))

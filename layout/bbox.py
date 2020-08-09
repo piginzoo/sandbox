@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 
 class KeyValue():
 
-    def __init__(self, key_bbox, parent_bbox=None):  # 可能是一个keybox里面的子keybox
-        self.value_boxes = []
+    def __init__(self, key_bbox, field,parent_bbox=None):  # 可能是一个keybox里面的子keybox
+        self.value_bboxes = []
         self.key_bbox = key_bbox
+        self.field = field
         if parent_bbox:
             self.parent_bbox = parent_bbox
         else:
@@ -21,10 +22,10 @@ class KeyValue():
         if type(value) == list:
             self.value += value
         assert type(value) == BBox
-        self.value_boxes.append(value)
+        self.value_bboxes.append(value)
 
     def __to_string(self):
-        value = "".join([bbox.txt for bbox in self.value_boxes])
+        value = "".join([bbox.txt for bbox in self.value_bboxes])
         return "{}:{}".format(self.key_bbox, value)
 
     def __str__(self):
@@ -38,6 +39,9 @@ class KeyValue():
 
 
 class BBox():
+    VERTICAL_MAX_DISTANCE = 5       # 上下相距5像素算很近
+    HORIZENTAL_MAX_DISTANCE = 0     # 左右相距0像素才算很近
+    MIN_OVERLAP_RATIO = 0.9         # 至少90%交并比才算真正相交
 
     # 用于创建一个虚拟bbox
     def create_virtual_bbox(text):
@@ -66,6 +70,12 @@ class BBox():
             return True
         return False
 
+    def height(self):
+        return self.pos[:, 1].max() -  self.pos[:, 1].min()
+
+    def width(self):
+        return self.pos[:, 0].max() -  self.pos[:, 0].min()
+
     def left(self):
         return self.pos[:, 0].min()
 
@@ -91,6 +101,7 @@ class BBox():
     def edit_distance(self, text):
         return Levenshtein.distance(text, self.txt)
 
+
     # 看左右距离,
     def horizontal_distance(self, other_bbox):
         other_pos = other_bbox.pos
@@ -114,16 +125,88 @@ class BBox():
         if my_y1 > his_y2: return my_y1 - his_y2  # 我在下面
         return 0  # 我俩相交
 
-    # 我们的垂直相交比
+    def merge(self, other):
+        logger.debug("[%s]/[%s]水平重叠度：%f",self.txt,other.txt,self.horizontal_overlay_ratio(other))
+        logger.debug("[%s]/[%s]竖直距离：%f",self.txt,other.txt,self.vertical_distance(other))
+        logger.debug("[%s]/[%s]竖直重叠度：%f",self.txt,other.txt,self.vertical_overlay_ratio(other))
+        logger.debug("[%s]/[%s]水平距离：%f",self.txt,other.txt,self.horizontal_distance(other))
+        # 上下合并
+        if self.horizontal_overlay_ratio(other)> BBox.MIN_OVERLAP_RATIO and \
+           self.vertical_distance(other)<=BBox.VERTICAL_MAX_DISTANCE:
+            top = min(self.top(),other.top())
+            bottom = max(self.bottom(), other.bottom())
+            left = min(self.left(), other.left())
+            right = max(self.right(), other.right())
+            pos = np.array([[left,top],[right,top],[right,bottom],[left,bottom]])
+            if self.top()<other.top():
+                text = self.txt+other.txt
+            else:
+                text = other.txt + self.txt
+            logger.debug("我[%r]和[%r]上下合并[%s]",self,other,text)
+            return BBox(pos,text)
+        # 左右合并
+        if self.vertical_overlay_ratio(other)> BBox.MIN_OVERLAP_RATIO and \
+           self.horizontal_distance(other)<=BBox.HORIZENTAL_MAX_DISTANCE:
+            top = min(self.top(),other.top())
+            bottom = max(self.bottom(), other.bottom())
+            left = min(self.left(), other.left())
+            right = max(self.right(), other.right())
+            pos = np.array([[left,top],[right,top],[right,bottom],[left,bottom]])
+            if self.left()<other.left():
+                text = self.txt + other.txt
+            else:
+                text = other.txt + self.txt
+            logger.debug("我[%r]和[%r]水平合并成[%s]", self, other,text)
+            return BBox(pos,text)
+        return None
+
+    # 我们的垂直相交比（相交部分除以框中高度比较小的那个，主要是考虑大小比例悬殊的情况），如果包含关系，值为1
+    # 情况1：我们相距很远，直接为0
+    # 情况1：我们相互包含，直接为1
+    # 情况1：我们确实相交
     def vertical_overlay_ratio(self, other):
         my_y1 = self.pos[:, 1].min()
         my_y2 = self.pos[:, 1].max()
         his_y1 = other.pos[:, 1].min()
         his_y2 = other.pos[:, 1].max()
-        y_height1 = abs(my_y1 - his_y2)
-        y_height2 = abs(my_y2 - his_y1)
-        y_height_ratio = min(y_height1, y_height2) / max(y_height1, y_height2)
+
+        # 情况1
+        if self.vertical_distance(other) != 0: return 0  # 如果距离不为0，那么根本不相交，相交比为0
+
+        # 情况2
+        if my_y1<=his_y1 and my_y2>=his_y2: return 1# 我包含你
+        if his_y1<= my_y1 and his_y2 >= my_y2: return 1# 你包含我
+
+        # 情况3
+        cross_height1 = abs(my_y1 - his_y2)
+        cross__height2 = abs(my_y2 - his_y1)
+
+        y_height_ratio = min(cross_height1, cross__height2) / min(self.height(),self.height())
         return y_height_ratio
+
+    # 我们的水平相交比（相交部分除以框中宽度比较小的那个，主要是考虑大小比例悬殊的情况），如果包含关系，值为1
+    # 情况1：我们相距很远，直接为0
+    # 情况1：我们相互包含，直接为1
+    # 情况1：我们确实相交
+    def horizontal_overlay_ratio(self, other):
+        my_x1 = self.pos[:, 0].min()
+        my_x2 = self.pos[:, 0].max()
+        his_x1 = other.pos[:, 0].min()
+        his_x2 = other.pos[:, 0].max()
+
+        # 情况1
+        if self.horizontal_distance(other) != 0: return 0  # 如果距离不为0，那么根本不相交，相交比为0
+
+        # 情况2
+        if my_x1<=his_x1 and my_x2>=his_x2: return 1# 我包含你
+        if his_x1<= my_x1 and his_x2 >= my_x2: return 1# 你包含我
+
+        # 情况3
+        cross_width1 = abs(my_x1 - his_x2)
+        cross__width2 = abs(my_x2 - his_x1)
+
+        y_width_ratio = min(cross_width1, cross__width2) / min(self.width(),self.width())
+        return y_width_ratio
 
     def is_keybbox(self):
         return not self.field == None

@@ -101,47 +101,47 @@ FEILDS = [{
 {
     "key": "投保人",
     "text": "投保人",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },
 {
     "key": "投保人",
     "text": "投保人信息",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "投保人",
     "text": "投保人姓名",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "投保人客户号",
     "text": "投保人客户号",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },
 #------------------------------------------------------------------------
 {
     "key": "被保险人",
     "text": "被保险人",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },
 {
     "key": "被保险人",
     "text": "被保险人信息",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "被保险人",
     "text": "被保险人姓名",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "被保险人客户号",
     "text": "被保险人客户号",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "被保险人",
     "text": "被保人姓名",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },{
     "key": "被保险人",
     "text": "被保姓名",
-    "type": ["key-value"]
+    "type": ["key-value","table"]
 },
 #------------------------------------------------------------------------
 {
@@ -225,11 +225,11 @@ FEILDS = [{
 {
     "key": "交费方式",
     "text": "交费方式",
-    "type": ["key-value,table"]
+    "type": ["key-value","table"]
 },{
     "key": "交费方式",
     "text": "缴费方式",
-    "type": ["key-value,table"]
+    "type": ["key-value","table"]
 },{
     "key": "交费日期",
     "text": "交费日期",
@@ -246,6 +246,14 @@ FEILDS = [{
     "key": "首期合计保险费",
     "text": "保费合计",
     "type": ["key-value"]
+},{
+    "key": "首期合计保险费",
+    "text": "首期保险费合计大写",
+    "type": ["key-value"]
+},{
+    "key": "标准保费",
+    "text": "标准保费",
+    "type": ["table"]
 },
 #------------------------------------------------------------------------
 {
@@ -346,6 +354,18 @@ FEILDS = [{
 },{
     "key": "满期日",
     "text": "保险满期日",
+    "type": ["table"]
+},{
+    "key": "满期日",
+    "text": "期满日",
+    "type": ["table"]
+},{
+    "key": "满期日",
+    "text": "保险期满日",
+    "type": ["table"]
+},{
+    "key": "期满日",
+    "text": "交费期满日",
     "type": ["table"]
 },{
     "key": "受益人姓名",
