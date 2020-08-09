@@ -253,7 +253,7 @@ FEILDS = [{
 },{
     "key": "标准保费",
     "text": "标准保费",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },
 #------------------------------------------------------------------------
 {
@@ -298,95 +298,95 @@ FEILDS = [{
 {
     "key": "险种名称",
     "text": "险种名称",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险计划",
     "text": "保险计划",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险期间",
     "text": "保险期间",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "交费期间",
     "text": "交费期间",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "交费方式",
     "text": "交费方式",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "交费年限",
     "text": "交费年限",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险金额",
     "text": "保险金额",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险金额",
     "text": "保额",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险金额",
     "text": "基本保险金额",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "份数",
     "text": "份数",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "档次",
     "text": "档次",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险费",
     "text": "保险费",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "保险费",
     "text": "首期保险费",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "满期日",
     "text": "满期日",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "满期日",
     "text": "保险满期日",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "满期日",
     "text": "期满日",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "满期日",
     "text": "保险期满日",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "期满日",
     "text": "交费期满日",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "受益人姓名",
     "text": "受益人姓名",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "受益顺序",
     "text": "受益顺序",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "受益比例",
     "text": "受益比例",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "受益份额",
     "text": "受益份额",
-    "type": ["table"]
+    "type": ["key-value","table"]
 },{
     "key": "与被保险人关系",
     "text": "与被保险人关系",
-    "type": ["table"]
+    "type": ["key-value","table"]
 # ----------------
 },{
     "key": "本栏以下空白",

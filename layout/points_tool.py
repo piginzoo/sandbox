@@ -34,6 +34,8 @@ def sort_rect_points(rect):
 # 例如：结果为30度，意味着这个三角形从水平方向，顺时针转了30度
 def caculate_rect_inclination(rect):
     line1, _ = find_longer_2_lines_of_bbox(rect)
+    if line1 is None:
+        return math.radians(90)
     k = line1[2]
     arc = math.atan(k)
     if math.isnan(arc):
@@ -70,7 +72,7 @@ def test1():
 def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=10000):
     p1, p2, k1 = line1
     # 选择一个适度的右方探测x
-    detect_x = p1[0] + image_width * 0.75
+    detect_x = p1[0] + image_width * 0.5 # TODO 这个参数之前调整到0.75，效果更好，但是0.75会导致4变形交叉
 
     # 先用平行线围出一个四边形
     b1 = p1[1] - k1 * p1[0]  # y=kx+b => b=y-kx
@@ -86,6 +88,9 @@ def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=1
     # print(bbox.pos)
     spotlight_poly = Polygon(spotlight_poly)
     poly = Polygon(bbox.pos)
+    # print("---------")
+    # print([p1, p_end1, p_end2, p3])
+    # print(bbox.pos)
     intersection_area = spotlight_poly.intersection(poly).area
     bbox_area = poly.area
 
@@ -119,9 +124,9 @@ def find_approximate_horizontal_2_lines_of_bbox(bbox):
 
 
 # 找到bbox的两条长边的直线方程，bbox一定是个矩形，但是可能是倾斜的
-def find_longer_2_lines_of_bbox(bbox):
-    pos = bbox.pos
-    assert pos.shape == (4, 2), str(pos)
+def find_longer_2_lines_of_bbox(pos):
+    # pos = bbox.pos
+    # assert pos.shape == (4, 2), str(pos)
     points_num = len(pos)  # 虽然可以直接写4，还是尽量灵活一些，万一未来要改成多边形呢
 
     # 先按照最高点，然后顺时针对点进行排序
@@ -143,7 +148,7 @@ def find_longer_2_lines_of_bbox(bbox):
     # print("bbox:[%r]" % len(bbox.txt))
     if (p1[0] - p2[0]) == 0:
         logger.debug("行识别：此框[%r]长边为竖直的")
-        return
+        return None,None
     k1 = (p1[1] - p2[1]) / (p1[0] - p2[0])
 
     # 找到另外一条长边的2个点
@@ -152,7 +157,7 @@ def find_longer_2_lines_of_bbox(bbox):
     (p3[0] - p4[0])
     k2 = (p3[1] - p4[1]) / (p3[0] - p4[0])
 
-    logger.debug("行识别：为bbox[%r]找到两条长边[k1/k2][%.2f,%.2f]", bbox, k1, k2)
+    logger.debug("行识别：为bbox[%r]找到两条长边[k1/k2][%.2f,%.2f]", pos, k1, k2)
     return [p1, p2, k1], [p3, p4, k2]
 
 
@@ -182,8 +187,8 @@ def rotate_rect_by_center(rect, radian):
     return np.array(rotated_rect, np.int32)
 
 
-def rotate_rect_to_horizontal(rect, image=None):
-    rotated_arc = caculate_rect_inclination(rect, image)
+def rotate_rect_to_horizontal(rect):
+    rotated_arc = caculate_rect_inclination(rect)
     if rotated_arc == 0:
         logger.debug("矩形倾斜角度为0，无需旋转")
         return rect

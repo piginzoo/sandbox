@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 COLOR_BLACK = (0, 0, 0)
 COLOR_RED = (0, 0, 255)
 COLOR_GREEN = (0, 255, 0)
+COLOR_DARK_GREEN=(34,139,34)
 COLOR_BLUE = (255, 0, 0)
 COLOR_YELLOW = (0, 255, 255)
 
@@ -53,20 +54,20 @@ def debug(image, all_rows, all_row_bboxs, exclued_bboxes, image_width):
 
 
 # 把小框都画上
-def draw_polys_with_color(image, polys, color):
+def draw_polys_with_color(image, polys, color,thickness=1):
     polys = [p for p in polys if not (p == 0).all()]
     if len(polys) == 0: return
     polys = np.int32(polys)
     assert polys.shape[-2:] == (4, 2), "实际shape:{}".format(polys.shape[-2:])
     for pos in polys:
-        cv2.polylines(image, [pos], isClosed=True, color=color, thickness=2)
+        cv2.polylines(image, [pos], isClosed=True, color=color, thickness=thickness)
 
 
 # 把小框都画上
-def draw_poly_with_color(image, poly, color):
+def draw_poly_with_color(image, poly, color,thickness=1):
     poly = np.int32(poly)
     assert poly.shape[:2] == (4, 2), "实际shape:{}".format(poly.shape)
-    cv2.polylines(image, [poly], isClosed=True, color=color, thickness=2)
+    cv2.polylines(image, [poly], isClosed=True, color=color, thickness=thickness)
 
 
 # 把小框都画上

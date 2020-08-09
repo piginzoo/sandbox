@@ -74,8 +74,16 @@ def _merge(_bbox, one_row_bboxes):
 def process(image, image_name, bboxes):
     logger.debug("开始处理此图的bboxes们：%d个", len(bboxes))
 
+    image_copy = image.copy()
     for _bbox in bboxes:
-        cv2.polylines(image, [_bbox.pos], True, COLOR_BLACK, thickness=1)
+        cv2.polylines(image_copy, [_bbox.pos], True, COLOR_BLACK, thickness=1)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_raw.jpg".format(name), image_copy)
+
+    display_raw_bbox(bboxes,image,image_name)
+
+    exit()
+    print("xxxxxxx")
 
     exclued_bboxes = exclude_empty_text_bboxes(bboxes)
 
@@ -86,6 +94,56 @@ def process(image, image_name, bboxes):
 
     all_rows, all_row_bboxes = recognize_rough_row(good_bboxes, image_height)
 
+    # merge_small_bboxes(all_row_bboxes)
+
+    all_row_bboxes = split_high_rows_2(all_rows, all_row_bboxes, average_bbox_height, image_width)
+
+    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
+
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_rows.jpg".format(name), image)
+
+    # 按照行的最左面的框的起始Y坐标排序
+    logger.debug("按照行的最左面的框的起始Y坐标排序")
+    all_row_bboxes = sorted(all_row_bboxes, key=lambda row_bboxes: row_bboxes[0].pos[:, 1].min())
+    for row_bboxes in all_row_bboxes:
+        logger.debug("行(%d)：%r", len(row_bboxes), row_bboxes)
+        if len(row_bboxes) == 1 and len(row_bboxes[0].txt) == 1:
+            all_row_bboxes.remove(row_bboxes)
+            logger.debug("行%r只有一个字，干扰数据，删除", row_bboxes)
+    logger.debug("最终切分出%d行all_rows和%d行all_row_bboxes", len(all_rows), len(all_row_bboxes))
+
+    extract_key_values2(all_row_bboxes, image, "key-value")
+
+    extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width)
+    logger.info("-------------------------")
+    extract_key_values2(all_row_bboxes, image, key_type="key-value,table")
+
+    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
+    cv2.imwrite("debug/{}".format(image_name), image)
+
+    return image
+
+from points_tool import *
+from image_utils import *
+def display_raw_bbox(bboxes,image,image_name):
+    r = int(image[:, :, 0].mean())
+    g = int(image[:, :, 1].mean())
+    b = int(image[:, :, 2].mean())
+
+    image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    for _bbox in bboxes:
+        x = _bbox.pos[:, 0].min()
+        y = _bbox.pos[:, 1].min()
+        word_images = get_rotated_text_image(_bbox, (r, g, b))
+        image.paste(word_images, (x, y),mask=word_images)
+    image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_text.jpg".format(name), image)
+
+
+
+def merge_small_bboxes(all_row_bboxes):
     # 合并一些小框，原则是相距很近，
     # 左右合并
     # 我们的两边相交，或者非常近，有个阈值（比如5个像素内）
@@ -113,34 +171,6 @@ def process(image, image_name, bboxes):
         # 替换旧有的这行框
         logger.debug("旧行(%d=>%d)合并成[%r]", original_size, len(new_one_row_bboxes), new_one_row_bboxes)
         all_row_bboxes[i] = new_one_row_bboxes
-
-    all_row_bboxes = split_high_rows_2(all_rows, all_row_bboxes, average_bbox_height, image_width)
-
-    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
-
-    name, ext = os.path.splitext(image_name)
-    cv2.imwrite("debug/{}_rows.jpg".format(name), image)
-
-    # 按照行的最左面的框的起始Y坐标排序
-    logger.debug("按照行的最左面的框的起始Y坐标排序")
-    all_row_bboxes = sorted(all_row_bboxes, key=lambda row_bboxes: row_bboxes[0].pos[:, 1].min())
-    for row_bboxes in all_row_bboxes:
-        logger.debug("行(%d)：%r", len(row_bboxes), row_bboxes)
-        if len(row_bboxes) == 1 and len(row_bboxes[0].txt) == 1:
-            all_row_bboxes.remove(row_bboxes)
-            logger.debug("行%r只有一个字，干扰数据，删除", row_bboxes)
-    logger.debug("最终切分出%d行all_rows和%d行all_row_bboxes", len(all_rows), len(all_row_bboxes))
-
-    extract_key_values2(all_row_bboxes, image, "key-value")
-
-    extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width)
-
-    extract_key_values2(all_row_bboxes, image, key_type="key-value,table")
-
-    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
-    cv2.imwrite("debug/{}".format(image_name), image)
-
-    return image
 
 
 def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width):
@@ -222,7 +252,7 @@ def extract_key_values(good_bboxes, image, key_type):
     # 打印key value信息
     for key_value in key_values:
         key_pos = key_value.key_bbox.pos
-        draw_poly_with_color(image, key_pos, COLOR_RED)
+        draw_poly_with_color(image, key_pos, COLOR_DARK_GREEN)
 
         value_poses = []
         value_poses += [value_bbox.pos for value_bbox in key_value.value_bboxes]
@@ -249,6 +279,7 @@ def extract_key_values2(all_row_bboxes, image, key_type):
 
             logger.debug("开始处理bbox：%r", _bbox)
             # 返回这个bbox对应的key-value对，最后还有个上一个key对应的value
+            # key_values：这个bbox解析出来的key-values，previous_value_bbox：这个bbox里面开头的词，是前一个key的value
             key_values, previous_value_bbox = parse_key_values.process_bbox(_bbox, key_type)
 
             if previous_value_bbox and len(one_row_key_values) == 0:
@@ -273,12 +304,12 @@ def extract_key_values2(all_row_bboxes, image, key_type):
     for row_key_values in all_key_values:
         for key_value in row_key_values:
             key_pos = key_value.key_bbox.pos
-            draw_poly_with_color(image, key_pos, COLOR_RED)
+            draw_poly_with_color(image, key_pos, COLOR_DARK_GREEN,8)
 
             value_poses = []
             logger.debug("Key-Value:%r", key_value)
             value_poses += [value_bbox.pos for value_bbox in key_value.value_bboxes]
-            draw_polys_with_color(image, value_poses, COLOR_GREEN)
+            draw_polys_with_color(image, value_poses, COLOR_GREEN,1)
 
             value_text = "".join([value_bbox.txt for value_bbox in key_value.value_bboxes])
             # print(key_value)

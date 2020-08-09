@@ -28,7 +28,7 @@ def process_bbox(_bbox, key_type):
     bbox_text = bbox_text.strip()
 
     if (len(bbox_text)) <= 1:
-        logger.debug("此文本只有一个字[%s]，怒略", bbox_text)
+        logger.debug("此文本只有一个字[%s]，只可能是前一个key的value啊", bbox_text)
         return None,BBox.create_virtual_bbox(bbox_text)
 
     # 数字、日期，直接忽略，肯定不是key啊
@@ -113,7 +113,7 @@ def _process_one_key_text(_bbox,text,field):
 
     # 有key，有value
     key_bbox = BBox.create_virtual_bbox(field["text"]) # 先创建个虚拟的key_bbox
-    value = text[field_len:] # 得到value文本
+    value = _bbox.txt[field_len:] # 得到value文本
     # 去除冒号
     if len(value) > 0 and (value[0] == ":" or value[0] == "："):
         # 开头是个冒号啊

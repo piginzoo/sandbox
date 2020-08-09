@@ -126,10 +126,10 @@ class BBox():
         return 0  # 我俩相交
 
     def merge(self, other):
-        logger.debug("[%s]/[%s]水平重叠度：%f",self.txt,other.txt,self.horizontal_overlay_ratio(other))
-        logger.debug("[%s]/[%s]竖直距离：%f",self.txt,other.txt,self.vertical_distance(other))
-        logger.debug("[%s]/[%s]竖直重叠度：%f",self.txt,other.txt,self.vertical_overlay_ratio(other))
-        logger.debug("[%s]/[%s]水平距离：%f",self.txt,other.txt,self.horizontal_distance(other))
+        # logger.debug("[%s]/[%s]水平重叠度：%f",self.txt,other.txt,self.horizontal_overlay_ratio(other))
+        # logger.debug("[%s]/[%s]竖直距离：%f",self.txt,other.txt,self.vertical_distance(other))
+        # logger.debug("[%s]/[%s]竖直重叠度：%f",self.txt,other.txt,self.vertical_overlay_ratio(other))
+        # logger.debug("[%s]/[%s]水平距离：%f",self.txt,other.txt,self.horizontal_distance(other))
         # 上下合并
         if self.horizontal_overlay_ratio(other)> BBox.MIN_OVERLAP_RATIO and \
            self.vertical_distance(other)<=BBox.VERTICAL_MAX_DISTANCE:

@@ -68,6 +68,7 @@ def split_high_rows_2(all_rows,all_rows_bboxes, row_avarage_height, image_width)
                         logger.debug("行识别：找到一个辐射满足框，但是个单字框[%r]，继续使用上一个bbox[%r]作为探测框", found_next_bbox,
                                      current_detect_bbox)
                         one_row_bboxes.remove(found_next_bbox)  # 一删
+                        new_row_bboxes.append(found_next_bbox)  # 一加
                         continue
                     current_detect_bbox = found_next_bbox
                     one_row_bboxes.remove(current_detect_bbox)  # 一删
@@ -97,7 +98,7 @@ def find_spotlight_target(current_bbox, candiate_bboxes, image_width):
         line1, line2 = points_tool.find_approximate_horizontal_2_lines_of_bbox(current_bbox)
         # 计算下一个
         ratio = points_tool.spotlight_intersection_ratio(current_bbox, line1, line2, next_bbox, image_width)
-        if ratio > 0.5:
+        if ratio > 0.4:
             logger.debug("行识别：找到和当前bbox[%r]的下一个bbox[%r]，接力棒给他", current_bbox, next_bbox)
             return next_bbox
         else:
