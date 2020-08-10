@@ -22,6 +22,8 @@ poly2 = \
  [ 423, 3915],
  [ 535, 3915]]
 
+poly1= [[208, 736], [518.0, 736.0], [518.0, 752.0],[616, 752]]
+poly2 = [[563,752],[417,752],[417,741],[563,741]]
 image = np.full((4200,4200,3),255)
 image = cv2.polylines(image,[np.array(poly1,np.int32).reshape(4,2)],True,(0,0,255),2)
 image = cv2.polylines(image,[np.array(poly2,np.int32).reshape(4,2)],True,(255,0,0),3)

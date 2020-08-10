@@ -70,19 +70,33 @@ def test1():
 # line1，line2是一个组平行线，line形如[p1,p2,k]，像一个手电筒射出的平行光柱
 # 这个函数用来计算，目标bbox被这个光柱找到的面积比，也即是被平行线切除的面积 / 他自己的面积
 def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=10000):
-    p1, p2, k1 = line1
-    # 选择一个适度的右方探测x
-    detect_x = p1[0] + image_width * 0.5 # TODO 这个参数之前调整到0.75，效果更好，但是0.75会导致4变形交叉
 
-    # 先用平行线围出一个四边形
+    # 1. 计算line1上的右侧点
+    # 选择一个适度的右方探测x
+    p1, p2, k1 = line1
+    # 右侧选择一个点，用于形成一个四边形
+    detect_x = p1[0] + image_width * 0.5 # TODO 这个参数之前调整到0.75，效果更好，但是0.75会导致4变形交叉
+    # 计算第一条直线的截距b
     b1 = p1[1] - k1 * p1[0]  # y=kx+b => b=y-kx
+    # 得到右侧的x在这条直线上的点 p_end1
     p_end1 = [detect_x, k1 * detect_x + b1]
+
+    # 2. 计算line2上的右侧点
     p3, p4, k2 = line2
     b2 = p3[1] - k2 * p3[0]  # y=kx+b => b=y-kx
     p_end2 = [detect_x, k2 * detect_x + b2]
 
-    # 计算手电筒四边形和bbox的交面积
-    spotlight_poly = [p1, p_end1, p_end2, p3]
+    # 围成一个四边形
+    if p1[0] <p2[0]:
+        left1 = p1
+    else:
+        left1= p2
+    if p3[0] <p4[0]:
+        left2 = p3
+    else:
+        left2= p4
+    spotlight_poly = [left1, p_end1, p_end2, left2]
+
     # print(spotlight_poly)
     # print("bbox.pos")
     # print(bbox.pos)
@@ -104,6 +118,7 @@ def spotlight_intersection_ratio(current_bbox, line1, line2, bbox, image_width=1
 # 找到bbox的两条接近水平的两条线
 def find_approximate_horizontal_2_lines_of_bbox(bbox):
     pos = bbox.pos
+    # logger.info("pos[%r],text[%s]",pos,bbox.txt)
     assert pos.shape == (4, 2), str(pos)
     points_num = len(pos)  # 虽然可以直接写4，还是尽量灵活一些，万一未来要改成多边形呢
 
@@ -111,6 +126,8 @@ def find_approximate_horizontal_2_lines_of_bbox(bbox):
     for i in range(points_num):
         p1 = pos[i]
         p2 = pos[(i + 1) % points_num]
+
+        # 计算两两之间的线段的斜率
         if (p1[0] - p2[0]) == 0:
             logger.debug("行识别：此框的点[%r,%r]形成的为竖直的", p1, p2)
             k = 100000  # 随便是个大数
@@ -119,6 +136,7 @@ def find_approximate_horizontal_2_lines_of_bbox(bbox):
         if abs(k) <= 1:
             logger.debug("行识别：此框的点[%r,%r]形成的|斜率|<1(45度以内)：%.2f", p1.tolist(), p2.tolist(), k)
             horizontal_lines.append([p1, p2, k])
+
     logger.debug("行识别：为bbox[%r]找到[%d]条接近水平的边", bbox, len(horizontal_lines))
     return horizontal_lines
 

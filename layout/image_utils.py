@@ -1,10 +1,8 @@
-import cv2
-from PIL import Image, ImageDraw, ImageFont
+from bbox import BBox
 from points_tool import *
-import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
-#
-def get_rotated_text_image(bbox, bg_color):
+def get_rotated_text_image(bbox, bg_color, font_size):
     pos = bbox.pos
     width = pos[:, 0].max() - pos[:, 0].min()
     height = pos[:, 1].max() - pos[:, 1].min()
@@ -27,7 +25,7 @@ def get_rotated_text_image(bbox, bg_color):
 
     draw = ImageDraw.Draw(words_image,"RGBA")
     # 注意下，下标是从0,0开始的，是自己的坐标系
-    font = ImageFont.truetype("data/simsun.ttc", 50)
+    font = ImageFont.truetype("data/simsun.ttc", font_size)
     draw.text((x+5,y+5), text, fill=(0, 0, 0), font=font)
     degree = math.degrees(arc)
     words_image = words_image.rotate(-degree)
@@ -45,7 +43,6 @@ def rotate(image, angle, center=None, scale=1.0):  # 1
     return rotated
 
 
-from bbox import BBox
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG,handlers=[logging.StreamHandler()])
     image = np.full([400, 400, 3], 0, np.uint8)

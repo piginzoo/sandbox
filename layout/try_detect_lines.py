@@ -2,8 +2,9 @@ import os
 import sys
 import table
 import data_loader
-from debug import *
+import debug
 from row_parser import *
+from image_utils import *
 
 
 # 去探测他的value：
@@ -74,23 +75,17 @@ def _merge(_bbox, one_row_bboxes):
 def process(image, image_name, bboxes):
     logger.debug("开始处理此图的bboxes们：%d个", len(bboxes))
 
-    image_copy = image.copy()
-    for _bbox in bboxes:
-        cv2.polylines(image_copy, [_bbox.pos], True, COLOR_BLACK, thickness=1)
-    name, ext = os.path.splitext(image_name)
-    cv2.imwrite("debug/{}_raw.jpg".format(name), image_copy)
+    debug._debug_draw_raw_bboxes(image, image_name, bboxes)
 
-    display_raw_bbox(bboxes,image,image_name)
+    debug._debug_draw_texts(bboxes, image, image_name)
 
-    exit()
-    print("xxxxxxx")
+    bboxes, exclued_bboxes = exclude_empty_text_bboxes(bboxes)
 
-    exclued_bboxes = exclude_empty_text_bboxes(bboxes)
-
-    good_bboxes, bad_bboxes, average_bbox_height, image_width, image_height = exclude_boxes_by_statistics(bboxes,
-                                                                                                          sigma_num=2)
-
+    good_bboxes, bad_bboxes, average_bbox_height, image_width, image_height = \
+        exclude_boxes_by_statistics(bboxes, sigma_num=2)
     exclued_bboxes += bad_bboxes
+
+    debug._debug_draw_abnormal_bbox(exclued_bboxes, image, image_name)
 
     all_rows, all_row_bboxes = recognize_rough_row(good_bboxes, image_height)
 
@@ -98,7 +93,7 @@ def process(image, image_name, bboxes):
 
     all_row_bboxes = split_high_rows_2(all_rows, all_row_bboxes, average_bbox_height, image_width)
 
-    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
+    image = debug.debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
 
     name, ext = os.path.splitext(image_name)
     cv2.imwrite("debug/{}_rows.jpg".format(name), image)
@@ -113,34 +108,18 @@ def process(image, image_name, bboxes):
             logger.debug("行%r只有一个字，干扰数据，删除", row_bboxes)
     logger.debug("最终切分出%d行all_rows和%d行all_row_bboxes", len(all_rows), len(all_row_bboxes))
 
+    logger.info("开始key-value后处理-----------------------------------------")
     extract_key_values2(all_row_bboxes, image, "key-value")
-
+    logger.info("开始表格处理------------------------------------------------")
     extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width)
-    logger.info("-------------------------")
+    logger.info("开始表格后Key-value处理--------------------------------------")
     extract_key_values2(all_row_bboxes, image, key_type="key-value,table")
 
-    image = debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
-    cv2.imwrite("debug/{}".format(image_name), image)
+    image = debug.debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_final.jpg".format(name), image)
 
     return image
-
-from points_tool import *
-from image_utils import *
-def display_raw_bbox(bboxes,image,image_name):
-    r = int(image[:, :, 0].mean())
-    g = int(image[:, :, 1].mean())
-    b = int(image[:, :, 2].mean())
-
-    image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    for _bbox in bboxes:
-        x = _bbox.pos[:, 0].min()
-        y = _bbox.pos[:, 1].min()
-        word_images = get_rotated_text_image(_bbox, (r, g, b))
-        image.paste(word_images, (x, y),mask=word_images)
-    image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-    name, ext = os.path.splitext(image_name)
-    cv2.imwrite("debug/{}_text.jpg".format(name), image)
-
 
 
 def merge_small_bboxes(all_row_bboxes):
@@ -182,9 +161,12 @@ def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_widt
         # 找出这一行的所有的bboxes
         key_counter = 0
         for _bbox in bboxes_of_row:
+
+            # 找到是否是一个key
             field = bbox.find_similar_key(_bbox.txt, "table")
             if not field:
-                field = bbox.find_similar_key(_bbox.txt, "key_value,table")
+                field = bbox.find_similar_key(_bbox.txt, "key-value,table")
+
             if field:
                 logger.debug("此bbox[%s]匹配文本为[%s]的key[%s]", _bbox.txt, field['text'], field['key'])
                 _bbox.field = field  # <------- 把field，类似于meta放置入bbox肚子里
@@ -192,7 +174,14 @@ def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_widt
         # 计算这行的bbox们，多少比例是key标题
         title_key_ratio = key_counter / len(bboxes_of_row)
 
+        # 分2种情况：
+        # 1、只有标题，没有value: 纯粹的表头
+        # 2、全都是key-value,key-value... ：应该是一个分组
         if title_key_ratio >= 0.5 and len(bboxes_of_row) >= 3:
+
+
+
+
             logger.debug("这行有[%d]个标题，超过3个，60%%的标题都是key，我有理由相信他是表格标题行:", len(bboxes_of_row))
 
             # 只build从表格标题行往后的行：all_row_bboxes[i + 1:]
@@ -208,14 +197,17 @@ def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_widt
             #     if __header_column.header_bbox in good_bboxes:
             #         good_bboxes.remove(__header_column.header_bbox)
 
-            logger.info("\n\n表格：")
+            logger.info("\n表格：")
             logger.info(
                 "=============================================================================================================================")
             logger.info("\t|\t".join([str(header_bbox) for header_bbox in bboxes_of_row]))
-            logger.info(str(__table))
+            logger.info(
+                "--------------------------------------------------------------------------------------------------------------------")
+            for row in __table.rows:
+                logger.info(str(row))
             logger.info(
                 "=============================================================================================================================")
-            logger.info("\n\n")
+            logger.info("\n")
         else:
             logger.debug("此行[%d]个框,[%d]是潜在表标题,比例[%.2f]", len(bboxes_of_row), key_counter, title_key_ratio)
 
@@ -252,11 +244,11 @@ def extract_key_values(good_bboxes, image, key_type):
     # 打印key value信息
     for key_value in key_values:
         key_pos = key_value.key_bbox.pos
-        draw_poly_with_color(image, key_pos, COLOR_DARK_GREEN)
+        debug.draw_poly_with_color(image, key_pos, COLOR_DARK_GREEN)
 
         value_poses = []
         value_poses += [value_bbox.pos for value_bbox in key_value.value_bboxes]
-        draw_polys_with_color(image, value_poses, COLOR_GREEN)
+        debug.draw_polys_with_color(image, value_poses, COLOR_GREEN)
 
         value_text = "".join([value_bbox.txt for value_bbox in key_value.value_bboxes])
         logger.info("{:10}\t => {:15s}\t [ 原始文本 \"{}\" =匹配了=> \"{}\" ] ".format(
@@ -269,7 +261,7 @@ def extract_key_values(good_bboxes, image, key_type):
 import parse_key_values
 
 
-def extract_key_values2(all_row_bboxes, image, key_type):
+def  extract_key_values2(all_row_bboxes, image, key_type):
     # 用来存放这样行的所有的key-values
     all_key_values = []
     for one_row_bboxes in all_row_bboxes:
@@ -304,12 +296,12 @@ def extract_key_values2(all_row_bboxes, image, key_type):
     for row_key_values in all_key_values:
         for key_value in row_key_values:
             key_pos = key_value.key_bbox.pos
-            draw_poly_with_color(image, key_pos, COLOR_DARK_GREEN,8)
+            debug.draw_poly_with_color(image, key_pos, debug.COLOR_DARK_GREEN, 8)
 
             value_poses = []
             logger.debug("Key-Value:%r", key_value)
             value_poses += [value_bbox.pos for value_bbox in key_value.value_bboxes]
-            draw_polys_with_color(image, value_poses, COLOR_GREEN,1)
+            debug.draw_polys_with_color(image, value_poses, debug.COLOR_GREEN, 1)
 
             value_text = "".join([value_bbox.txt for value_bbox in key_value.value_bboxes])
             # print(key_value)
@@ -345,6 +337,7 @@ if __name__ == '__main__':
         #     one_image_horizontal_pos.append(rotated_pos)
         # one_image_poses = np.array(one_image_horizontal_pos)
         one_image_bboxes = all_bboxes[i]
+        logger.info("\n\n\n")
         logger.info("========================================================")
         logger.info("    %s", image_names[i])
         logger.info("========================================================")

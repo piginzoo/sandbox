@@ -58,6 +58,7 @@ def split_high_rows_2(all_rows,all_rows_bboxes, row_avarage_height, image_width)
             one_row_bboxes.remove(current_detect_bbox)  # 一删
             new_row_bboxes.append(current_detect_bbox)  # 一加
 
+            # logger.debug("框的文本：%r",current_detect_bbox.txt=="")
             logger.debug("行识别：创建新行，并且把当前框[%r]加入新行", current_detect_bbox)
 
             while current_detect_bbox:
@@ -204,30 +205,50 @@ def split_high_rows(rows, row_elements, row_avarage_height):
 
 def exclude_empty_text_bboxes(bboxes):
     exclued_bboxes = []
-    original_size = len(bboxes)
+    good_bboxes = []
     for _bbox in bboxes:
         if _bbox.txt.strip() == "":
-            logger.debug("此框识别文字为空，怒弃")
+            logger.debug("此框识别文字为空%r，怒弃",_bbox.pos.tolist())
             exclued_bboxes.append(_bbox)
-            bboxes.remove(_bbox)
+        else:
+            good_bboxes.append(_bbox)
+
     logger.debug("原bboxes[%d]个，删除了[%d]个空字符串的，还剩[%d]个",
-                 original_size,
+                 len(bboxes),
                  len(exclued_bboxes),
-                 len(bboxes))
-    return exclued_bboxes
+                 len(good_bboxes))
+    return good_bboxes,exclued_bboxes
 
 
 def exclude_boxes_by_statistics(bboxes, sigma_num=2):
-    poses = bbox.get_poses(bboxes)
-    good_poses, mean, bad_poses = exclude_1sigma(poses, sigma_num=sigma_num)
-    height = good_poses[:, :, 1].max()  # 所有bbox的最大的y
-    width = good_poses[:, :, 0].max()  # 所有bbox的最大的x
+
+    rotation_mapping = {}
+    h_poses = []
+    from bbox import BBox
+
+    for __bbox in bboxes:
+        h_pos = points_tool.rotate_rect_to_horizontal(__bbox.pos)
+        # 由于numpy数组和list都无法作为hash的key，变通的用BBox对象把
+        rotation_mapping[BBox(h_pos,"")] = __bbox
+        h_poses.append(h_pos)
+    logger.debug("对就%d个bboxes都摆平，并一一映射，映射[%d]个",len(bboxes),len(rotation_mapping))
+
+    h_good_poses, mean, h_bad_poses = exclude_1sigma(h_poses, sigma_num=sigma_num)
+    logger.debug("对摆平pos进行统计排除，从%d个原始水平框，得到%d个好的，%d个坏的，均值是：%f",
+                 len(bboxes),len(h_good_poses),len(h_bad_poses),mean)
+
+    height = h_good_poses[:, :, 1].max()  # 所有bbox的最大的y
+    width = h_bad_poses[:, :, 0].max()  # 所有bbox的最大的x
     logger.debug("图像宽[%d],高[%d]", width, height)
-    good_bboxes = bbox.filter_bboxes_by_poses(bboxes, good_poses)
-    bad_bboxes = bbox.filter_bboxes_by_poses(bboxes, bad_poses)
-    logger.debug("原bboxes[%d]个，删除了[%d]个2sigma外的，还剩[%d]个",
-                 len(bboxes), len(bad_poses), len(good_poses))
-    logger.debug("有问题的框：%r",bad_bboxes)
+
+    good_bboxes=[]
+    for h_pos in h_good_poses:
+        good_bboxes.append(rotation_mapping[BBox(h_pos,"")])
+    logger.debug("好摆平pos %d个，还原回原始pos %d个",len(h_good_poses),len(good_bboxes))
+    bad_bboxes = []
+    for h_pos in h_bad_poses:
+        bad_bboxes.append(rotation_mapping[BBox(h_pos,"")])
+    logger.debug("差摆平pos %d个，还原回原始pos %d个", len(h_bad_poses), len(bad_bboxes))
     return good_bboxes, bad_bboxes, mean, width, height
 
 

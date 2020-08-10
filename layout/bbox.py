@@ -1,7 +1,6 @@
 import re
 from row_parser import *
 import Levenshtein
-from debug import *
 from fields import *
 
 logger = logging.getLogger(__name__)
@@ -9,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class KeyValue():
 
-    def __init__(self, key_bbox, field,parent_bbox=None):  # 可能是一个keybox里面的子keybox
+    def __init__(self, key_bbox, field, parent_bbox=None):  # 可能是一个keybox里面的子keybox
         self.value_bboxes = []
         self.key_bbox = key_bbox
         self.field = field
@@ -39,9 +38,9 @@ class KeyValue():
 
 
 class BBox():
-    VERTICAL_MAX_DISTANCE = 5       # 上下相距5像素算很近
-    HORIZENTAL_MAX_DISTANCE = 0     # 左右相距0像素才算很近
-    MIN_OVERLAP_RATIO = 0.9         # 至少90%交并比才算真正相交
+    VERTICAL_MAX_DISTANCE = 5  # 上下相距5像素算很近
+    HORIZENTAL_MAX_DISTANCE = 0  # 左右相距0像素才算很近
+    MIN_OVERLAP_RATIO = 0.9  # 至少90%交并比才算真正相交
 
     # 用于创建一个虚拟bbox
     def create_virtual_bbox(text):
@@ -60,6 +59,11 @@ class BBox():
     def __repr__(self):
         return self.txt  # + " " + str(self.pos.tolist())
 
+    def __hash__(self):
+        key = str(self.pos.tolist()) + self.txt
+        logger.debug("hash[%r]的key为：%s", self, key)
+        return hash(key)
+
     def __eq__(self, other):
         # 如果自己本身就是个无效坐标（虚拟bbox），就跟谁也不相同
         if (self.pos == 0).all():
@@ -71,10 +75,10 @@ class BBox():
         return False
 
     def height(self):
-        return self.pos[:, 1].max() -  self.pos[:, 1].min()
+        return self.pos[:, 1].max() - self.pos[:, 1].min()
 
     def width(self):
-        return self.pos[:, 0].max() -  self.pos[:, 0].min()
+        return self.pos[:, 0].max() - self.pos[:, 0].min()
 
     def left(self):
         return self.pos[:, 0].min()
@@ -100,7 +104,6 @@ class BBox():
 
     def edit_distance(self, text):
         return Levenshtein.distance(text, self.txt)
-
 
     # 看左右距离,
     def horizontal_distance(self, other_bbox):
@@ -131,33 +134,33 @@ class BBox():
         # logger.debug("[%s]/[%s]竖直重叠度：%f",self.txt,other.txt,self.vertical_overlay_ratio(other))
         # logger.debug("[%s]/[%s]水平距离：%f",self.txt,other.txt,self.horizontal_distance(other))
         # 上下合并
-        if self.horizontal_overlay_ratio(other)> BBox.MIN_OVERLAP_RATIO and \
-           self.vertical_distance(other)<=BBox.VERTICAL_MAX_DISTANCE:
-            top = min(self.top(),other.top())
+        if self.horizontal_overlay_ratio(other) > BBox.MIN_OVERLAP_RATIO and \
+                self.vertical_distance(other) <= BBox.VERTICAL_MAX_DISTANCE:
+            top = min(self.top(), other.top())
             bottom = max(self.bottom(), other.bottom())
             left = min(self.left(), other.left())
             right = max(self.right(), other.right())
-            pos = np.array([[left,top],[right,top],[right,bottom],[left,bottom]])
-            if self.top()<other.top():
-                text = self.txt+other.txt
-            else:
-                text = other.txt + self.txt
-            logger.debug("我[%r]和[%r]上下合并[%s]",self,other,text)
-            return BBox(pos,text)
-        # 左右合并
-        if self.vertical_overlay_ratio(other)> BBox.MIN_OVERLAP_RATIO and \
-           self.horizontal_distance(other)<=BBox.HORIZENTAL_MAX_DISTANCE:
-            top = min(self.top(),other.top())
-            bottom = max(self.bottom(), other.bottom())
-            left = min(self.left(), other.left())
-            right = max(self.right(), other.right())
-            pos = np.array([[left,top],[right,top],[right,bottom],[left,bottom]])
-            if self.left()<other.left():
+            pos = np.array([[left, top], [right, top], [right, bottom], [left, bottom]])
+            if self.top() < other.top():
                 text = self.txt + other.txt
             else:
                 text = other.txt + self.txt
-            logger.debug("我[%r]和[%r]水平合并成[%s]", self, other,text)
-            return BBox(pos,text)
+            logger.debug("我[%r]和[%r]上下合并[%s]", self, other, text)
+            return BBox(pos, text)
+        # 左右合并
+        if self.vertical_overlay_ratio(other) > BBox.MIN_OVERLAP_RATIO and \
+                self.horizontal_distance(other) <= BBox.HORIZENTAL_MAX_DISTANCE:
+            top = min(self.top(), other.top())
+            bottom = max(self.bottom(), other.bottom())
+            left = min(self.left(), other.left())
+            right = max(self.right(), other.right())
+            pos = np.array([[left, top], [right, top], [right, bottom], [left, bottom]])
+            if self.left() < other.left():
+                text = self.txt + other.txt
+            else:
+                text = other.txt + self.txt
+            logger.debug("我[%r]和[%r]水平合并成[%s]", self, other, text)
+            return BBox(pos, text)
         return None
 
     # 我们的垂直相交比（相交部分除以框中高度比较小的那个，主要是考虑大小比例悬殊的情况），如果包含关系，值为1
@@ -174,14 +177,14 @@ class BBox():
         if self.vertical_distance(other) != 0: return 0  # 如果距离不为0，那么根本不相交，相交比为0
 
         # 情况2
-        if my_y1<=his_y1 and my_y2>=his_y2: return 1# 我包含你
-        if his_y1<= my_y1 and his_y2 >= my_y2: return 1# 你包含我
+        if my_y1 <= his_y1 and my_y2 >= his_y2: return 1  # 我包含你
+        if his_y1 <= my_y1 and his_y2 >= my_y2: return 1  # 你包含我
 
         # 情况3
         cross_height1 = abs(my_y1 - his_y2)
         cross__height2 = abs(my_y2 - his_y1)
 
-        y_height_ratio = min(cross_height1, cross__height2) / min(self.height(),self.height())
+        y_height_ratio = min(cross_height1, cross__height2) / min(self.height(), self.height())
         return y_height_ratio
 
     # 我们的水平相交比（相交部分除以框中宽度比较小的那个，主要是考虑大小比例悬殊的情况），如果包含关系，值为1
@@ -198,14 +201,14 @@ class BBox():
         if self.horizontal_distance(other) != 0: return 0  # 如果距离不为0，那么根本不相交，相交比为0
 
         # 情况2
-        if my_x1<=his_x1 and my_x2>=his_x2: return 1# 我包含你
-        if his_x1<= my_x1 and his_x2 >= my_x2: return 1# 你包含我
+        if my_x1 <= his_x1 and my_x2 >= his_x2: return 1  # 我包含你
+        if his_x1 <= my_x1 and his_x2 >= my_x2: return 1  # 你包含我
 
         # 情况3
         cross_width1 = abs(my_x1 - his_x2)
         cross__width2 = abs(my_x2 - his_x1)
 
-        y_width_ratio = min(cross_width1, cross__width2) / min(self.width(),self.width())
+        y_width_ratio = min(cross_width1, cross__width2) / min(self.width(), self.width())
         return y_width_ratio
 
     def is_keybbox(self):

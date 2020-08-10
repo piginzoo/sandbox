@@ -1,6 +1,5 @@
-import cv2
-import logging
-import numpy as np
+import os
+from image_utils import *
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +9,41 @@ COLOR_GREEN = (0, 255, 0)
 COLOR_DARK_GREEN=(34,139,34)
 COLOR_BLUE = (255, 0, 0)
 COLOR_YELLOW = (0, 255, 255)
+
+def _debug_draw_texts(bboxes,image,image_name):
+    r = int(image[:, :, 0].mean())
+    g = int(image[:, :, 1].mean())
+    b = int(image[:, :, 2].mean())
+
+    base_with = 1000
+    base_font_size = 12
+    width = image.shape[1]
+    import math
+    font_size = math.ceil(width/base_with*base_font_size)
+
+    image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    for _bbox in bboxes:
+        x = _bbox.pos[:, 0].min()
+        y = _bbox.pos[:, 1].min()
+        word_images = get_rotated_text_image(_bbox, (r, g, b) ,font_size)
+        image.paste(word_images, (x, y),mask=word_images)
+    image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_text.jpg".format(name), image)
+
+def _debug_draw_abnormal_bbox(bad_bboxes,image,image_name):
+    image_copy = image.copy()
+    for _bbox in bad_bboxes:
+        cv2.polylines(image_copy, [_bbox.pos], True, COLOR_RED, thickness=5)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_bad.jpg".format(name), image_copy)
+
+def _debug_draw_raw_bboxes(image,image_name,bboxes):
+    image_copy = image.copy()
+    for _bbox in bboxes:
+        cv2.polylines(image_copy, [_bbox.pos], True, COLOR_BLACK, thickness=1)
+    name, ext = os.path.splitext(image_name)
+    cv2.imwrite("debug/{}_raw.jpg".format(name), image_copy)
 
 
 def debug(image, all_rows, all_row_bboxs, exclued_bboxes, image_width):
