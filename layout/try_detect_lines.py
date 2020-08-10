@@ -109,7 +109,7 @@ def process(image, image_name, bboxes):
     logger.debug("最终切分出%d行all_rows和%d行all_row_bboxes", len(all_rows), len(all_row_bboxes))
 
     logger.info("开始key-value后处理-----------------------------------------")
-    extract_key_values2(all_row_bboxes, image, "key-value")
+    all_key_values = extract_key_values2(all_row_bboxes, image, "key-value")
     logger.info("开始表格处理------------------------------------------------")
     extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width)
     logger.info("开始表格后Key-value处理--------------------------------------")
@@ -185,8 +185,8 @@ def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_widt
             logger.debug("这行有[%d]个标题，超过3个，60%%的标题都是key，我有理由相信他是表格标题行:", len(bboxes_of_row))
 
             # 只build从表格标题行往后的行：all_row_bboxes[i + 1:]
-            __table = table.table_builder(bboxes_of_row, all_row_bboxes[i + 1:], average_bbox_height, image_width,
-                                          image_height)
+            __table = table.table_build(bboxes_of_row, all_row_bboxes[i + 1:], average_bbox_height, image_width,
+                                        image_height)
 
             # # 先把header bboxes从大池子里删掉
             # for __row in __table.rows:
@@ -210,6 +210,87 @@ def extract_tables(all_row_bboxes, average_bbox_height, image_height, image_widt
             logger.info("\n")
         else:
             logger.debug("此行[%d]个框,[%d]是潜在表标题,比例[%.2f]", len(bboxes_of_row), key_counter, title_key_ratio)
+
+
+def is_group_or_table_header(key_values):
+
+    if len(key_values)<3:
+        logger.debug("识别出来的key-values[%r]太少了，不足以成为组或者表格",key_values)
+        return "value"
+
+    no_value_key_counter=0
+    for key_value in key_values:
+        if len(key_value.value_bboxes)==0:
+            logger.debug("此key是个没有value的key")
+            no_value_key_counter+=1
+    ratio = no_value_key_counter / len(key_values)
+    if ratio>0.5:
+        logger.debug("这行key-values[%d]个，%d个key没有value，比值%f，所以他是个表格header",len(key_values),no_value_key_counter,ratio)
+        b_table_recognizing = True
+        return "table-header"
+
+    return "group"
+
+
+def extract_tables2(all_row_bboxes, average_bbox_height, image_height, image_width):
+    # 对行按照第一个元素的Y进行排序
+    all_row_bboxes = sorted(all_row_bboxes, key=lambda row_bboxes: row_bboxes[0].pos[:, 1].min())
+    # 遍历每一行
+    for i in range(len(all_row_bboxes)):
+        bboxes_of_row = all_row_bboxes[i]
+        # 找出这一行的所有的bboxes
+        key_counter = 0
+        for _bbox in bboxes_of_row:
+
+            # 找到是否是一个key
+            field = bbox.find_similar_key(_bbox.txt, "table")
+            if not field:
+                field = bbox.find_similar_key(_bbox.txt, "key-value,table")
+
+            if field:
+                logger.debug("此bbox[%s]匹配文本为[%s]的key[%s]", _bbox.txt, field['text'], field['key'])
+                _bbox.field = field  # <------- 把field，类似于meta放置入bbox肚子里
+                key_counter += 1
+        # 计算这行的bbox们，多少比例是key标题
+        title_key_ratio = key_counter / len(bboxes_of_row)
+
+        # 分2种情况：
+        # 1、只有标题，没有value: 纯粹的表头
+        # 2、全都是key-value,key-value... ：应该是一个分组
+        if title_key_ratio >= 0.5 and len(bboxes_of_row) >= 3:
+
+
+
+
+            logger.debug("这行有[%d]个标题，超过3个，60%%的标题都是key，我有理由相信他是表格标题行:", len(bboxes_of_row))
+
+            # 只build从表格标题行往后的行：all_row_bboxes[i + 1:]
+            __table = table.table_build(bboxes_of_row, all_row_bboxes[i + 1:], average_bbox_height, image_width,
+                                        image_height)
+
+            # # 先把header bboxes从大池子里删掉
+            # for __row in __table.rows:
+            #     for __col in __row.columns:
+            #         for __bbox in __col.bboxes:
+            #             if __bbox in __bbox: good_bboxes.remove(__bbox)
+            # for __header_column in __table.header_columns:
+            #     if __header_column.header_bbox in good_bboxes:
+            #         good_bboxes.remove(__header_column.header_bbox)
+
+            logger.info("\n表格：")
+            logger.info(
+                "=============================================================================================================================")
+            logger.info("\t|\t".join([str(header_bbox) for header_bbox in bboxes_of_row]))
+            logger.info(
+                "--------------------------------------------------------------------------------------------------------------------")
+            for row in __table.rows:
+                logger.info(str(row))
+            logger.info(
+                "=============================================================================================================================")
+            logger.info("\n")
+        else:
+            logger.debug("此行[%d]个框,[%d]是潜在表标题,比例[%.2f]", len(bboxes_of_row), key_counter, title_key_ratio)
+
 
 
 def extract_key_values(good_bboxes, image, key_type):
@@ -260,19 +341,30 @@ def extract_key_values(good_bboxes, image, key_type):
 
 import parse_key_values
 
+import queue
+def  extract_key_values2(all_row_bboxes, image):
+    stack = queue.LifoQueue()
 
-def  extract_key_values2(all_row_bboxes, image, key_type):
     # 用来存放这样行的所有的key-values
     all_key_values = []
-    for one_row_bboxes in all_row_bboxes:
+    is_table_recognizing = False
+    for i in range(len(all_row_bboxes)):
+        one_row_bboxes = all_row_bboxes[i]
         logger.debug("Key分析：开始分析这一行：%r", one_row_bboxes)
+
         one_row_key_values = []
+
+        # 处理这一行：
+        # 1、他可能是一个包含了key-value的行（顺序处理）
+        # 2、他可能是一个包含了分组的key-value的行（回溯1行）
+        # 3、他可能是一个表格的标题行（顺序处理）
+        # 4、他可能是一个表格的数据行（需要回溯）
         for _bbox in one_row_bboxes:
 
             logger.debug("开始处理bbox：%r", _bbox)
             # 返回这个bbox对应的key-value对，最后还有个上一个key对应的value
             # key_values：这个bbox解析出来的key-values，previous_value_bbox：这个bbox里面开头的词，是前一个key的value
-            key_values, previous_value_bbox = parse_key_values.process_bbox(_bbox, key_type)
+            key_values, previous_value_bbox = parse_key_values.process_bbox(_bbox)
 
             if previous_value_bbox and len(one_row_key_values) == 0:
                 logger.debug("不对啊，为这个value[%s]找不到前面的key啊", previous_value_bbox.txt)
@@ -288,9 +380,29 @@ def  extract_key_values2(all_row_bboxes, image, key_type):
         if len(one_row_key_values) > 0:
             logger.debug("这行原始bboxes包含%d个key-value", len(one_row_key_values))
             all_key_values.append(one_row_key_values)
-            all_row_bboxes.remove(one_row_bboxes)
         else:
             logger.debug("这行原始bboxes不包含任何key-value:%r", one_row_bboxes)
+
+        # 解析处理这些key是什么key：纯key-value，还是table的，还是both
+        group_key_values = []
+        single_key_values = []
+        for one_key_value in one_row_key_values:
+            if one_key_value.field['type']==["key-value"]:
+                single_key_values.append(one_key_value)
+            else:
+                group_key_values.append(one_key_value)
+
+        #
+        logger.debug("此行中，有%d个纯key-value的bbox",len(single_key_values))
+        logger.debug("此行中，有%d个组/表的bbox", len(group_key_values))
+
+        # 如果这个行是一个分组，处理分组
+        flag = is_group_or_table_header(group_key_values)
+
+        # 如果这个行是一个标题行，就需要继续往下处理表格数据了
+        if flag=="table-header":
+            is_table_recognizing = True # 开始做表格识别了
+
 
     # 打印key value信息
     for row_key_values in all_key_values:
@@ -312,9 +424,7 @@ def  extract_key_values2(all_row_bboxes, image, key_type):
                 value_text,
                 key_value.key_bbox.txt,
                 key_value.field['text']))
-
-
-# TODO：矩形识别旋转的算法大bug
+        return all_key_values
 
 if __name__ == '__main__':
 
@@ -342,3 +452,4 @@ if __name__ == '__main__':
         logger.info("    %s", image_names[i])
         logger.info("========================================================")
         image = process(images[i], image_names[i], one_image_bboxes)
+#xxxxx
