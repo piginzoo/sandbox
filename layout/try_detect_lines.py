@@ -109,11 +109,7 @@ def process(image, image_name, bboxes):
     logger.debug("最终切分出%d行all_rows和%d行all_row_bboxes", len(all_rows), len(all_row_bboxes))
 
     logger.info("开始key-value后处理-----------------------------------------")
-    all_key_values = extract_key_values2(all_row_bboxes, image, "key-value")
-    logger.info("开始表格处理------------------------------------------------")
-    extract_tables(all_row_bboxes, average_bbox_height, image_height, image_width)
-    logger.info("开始表格后Key-value处理--------------------------------------")
-    extract_key_values2(all_row_bboxes, image, key_type="key-value,table")
+    all_key_values = extract_key_values2(all_row_bboxes, image_height, image_width)
 
     image = debug.debug(image, all_rows, all_row_bboxes, exclued_bboxes, image_width)
     name, ext = os.path.splitext(image_name)
@@ -342,12 +338,16 @@ def extract_key_values(good_bboxes, image, key_type):
 import parse_key_values
 
 import queue
-def  extract_key_values2(all_row_bboxes, image):
+def  extract_key_values2(all_row_bboxes, image_width, image_heigth):
     stack = queue.LifoQueue()
 
     # 用来存放这样行的所有的key-values
     all_key_values = []
     is_table_recognizing = False
+    current_table = None
+    row_detect_counter = 0
+    stack = queue.LifoQueue()
+
     for i in range(len(all_row_bboxes)):
         one_row_bboxes = all_row_bboxes[i]
         logger.debug("Key分析：开始分析这一行：%r", one_row_bboxes)
@@ -402,7 +402,44 @@ def  extract_key_values2(all_row_bboxes, image):
         # 如果这个行是一个标题行，就需要继续往下处理表格数据了
         if flag=="table-header":
             is_table_recognizing = True # 开始做表格识别了
+            logger.debug("表分析:开始做表分析，标题行:%r，剩余需要分析的行：%d行", header_bboxes, len(left_row_bboxes))
 
+            # 计算每个框的的距离
+            from table import Table
+            current_table = Table(one_row_bboxes, image_width, image_heigth)
+
+
+
+        # 逐行处理
+        for i in range(len(all_row_boxes) - 1):
+            row_bboxes = all_row_boxes[i]
+
+            # 最多探测3行
+            if row_detect_counter > 3:
+                logger.debug("表识别：行探测：已经向下探测了3行，都不是表格行，认为表格结束！")
+                break;
+
+            if self.is_end(row_bboxes):
+                logger.debug("表识别：出现了结束行[%r]，认为表格结束了！", row_bboxes)
+                break;
+
+            # 解析这一行bboxes，看看是不是可以形成一个行Row
+            new_row = self.parse_row(row_bboxes)
+            # 如果这行是一行表数据，那么计数器重置，回过头出去之前积累的行数
+            if new_row:
+                current_row = new_row
+                row_detect_counter = 0  # 确认是新行后，探测一行的计数器重置
+                logger.debug("表识别：行识别：识别新行的后处理，把堆积的%d行表数据回填到表里", self.stack.qsize())
+                while not self.stack.empty():  # 把之前积累的行，都消化掉
+                    old_row_bboxes = self.stack.get()
+                    self.find_matched_bbox_for_header_column(current_row, old_row_bboxes)
+                    logger.debug("表识别：行识别：把堆积行bboxes数据[%r]回填到表里", old_row_bboxes)
+            # 如果这行不是表行数据
+            else:
+                logger.debug("表识别：当前行[%r]已经不是表格行了，暂时尝试放入stack", row_bboxes)
+                self.stack.put(row_bboxes)
+                row_detect_counter += 1
+////////////////
 
     # 打印key value信息
     for row_key_values in all_key_values:

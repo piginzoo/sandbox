@@ -202,7 +202,7 @@ class Table:
 
 
 # 构建表格，假设表格是标题一下的
-def table_builder(header_bboxes, left_row_bboxes, average_bbox_height, image_width, image_heigth):
+def table_build(header_bboxes, left_row_bboxes, average_bbox_height, image_width, image_heigth):
     logger.debug("表分析:开始做表分析，标题行:%r，剩余需要分析的行：%d行", header_bboxes, len(left_row_bboxes))
 
     # 计算每个框的的距离

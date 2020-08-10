@@ -23,7 +23,7 @@ def test_process_bbox(text,key_type="key-value"):
 #   "保险合同号:3939393939保险生效日：2020年09月08日货币单位"
 #   "保险合同号:3939393939保险生效日：2020年09月08日货币单位：人民币"
 #   "2020年3月4号保险合同号:...."   //[2020年3月4号]<--- 上一个key的value
-def process_bbox(_bbox, key_type):
+def process_bbox(_bbox):
     bbox_text = _bbox.txt
     bbox_text = bbox_text.strip()
 
@@ -43,9 +43,6 @@ def process_bbox(_bbox, key_type):
     # 先一口气找到所有的keys
     matched_fields = []
     for field in FEILDS:
-        # 看此key是不是需要被check的对象
-        key_type_list = key_type.split(",")
-        if not field['type'] == key_type_list: continue # key的类型必须一致，如果是key-value,table，两个都得对上
         # 关键词在中间的（注意，可能有多个）
         pos = text.find(field['text'])
         if pos!=-1:
