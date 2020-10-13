@@ -8,8 +8,8 @@ def load_data(path):
 
     image_names = os.listdir(input_dir)
 
-    image_names=[]
-    image_names.append("天安人寿逸享人生年金保险.jpg")
+    # image_names=[]
+    # image_names.append("天安人寿逸享人生年金保险.jpg")
     # image_names.append("32461594351366_.pic_hd.jpg")
     # image_names.append("国寿祥瑞终身寿险.jpg")
     # image_names.append("健康源（2019）增强版终身重大疾病保险..jpg")

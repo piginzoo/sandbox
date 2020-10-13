@@ -89,7 +89,7 @@ def process(image, image_name, bboxes):
 
     all_rows, all_row_bboxes = recognize_rough_row(good_bboxes, image_height)
 
-    # merge_small_bboxes(all_row_bboxes)
+    merge_small_bboxes(all_row_bboxes)
 
     all_row_bboxes = split_high_rows_2(all_rows, all_row_bboxes, average_bbox_height, image_width)
 
