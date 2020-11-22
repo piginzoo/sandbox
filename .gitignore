@@ -6,6 +6,8 @@ data
 data/
 out/
 output/
+opencv/test.png
+opencv/test.jpg
 opencv/ocr/data
 opencv/ocr/out
 opencv/test.jpg
