@@ -6,6 +6,8 @@ data
 data/
 out/
 output/
+recite/key.yml
+recite/audios
 opencv/test.png
 opencv/test.jpg
 opencv/ocr/data

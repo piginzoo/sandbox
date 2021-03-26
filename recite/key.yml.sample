@@ -1,0 +1,8 @@
+# 百度语音合成
+audio_app_id: <your app id>
+audio_api_key: <your app key>
+audio_secrete_key: <your secrete_key>
+
+# 百度翻译
+translate_app_id: <your app id>
+translate_app_key: <your app key>
