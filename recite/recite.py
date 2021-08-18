@@ -91,9 +91,10 @@ def main(book):
 
     words = []
     with open(book) as f:
-        words = f.read()
-        words = words.split(" ")
-
+        lines = f.readlines()
+        for l in lines:
+            l.strip()
+            words+= l.split(" ")
     random.shuffle(words)
 
     # print("语音配置：%s/%s/%s" % (AUDIO_APP_ID, AUDIO_API_KEY, AUDIO_SECRET_KEY))
@@ -107,10 +108,13 @@ def main(book):
         for w in words:
             print("%s" % w)
             read(client, w)
+
             b = input("会否？(n)")
+            r = translate(w)
+
+            print("中文----> %s\n" % r)
+
             if b == "n" or b == "N":
-                r = translate(w)
-                print("中文----> %s\n" % r)
                 reviews.append(w)
         b = input("复习一遍了，%d个不会，退出(y)?" % len(reviews))
         if b == "y" or b == "Y":
