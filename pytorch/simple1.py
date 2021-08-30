@@ -82,3 +82,8 @@ for epoch in range(2):  # loop over the dataset multiple times
         print('[%d, %5d] loss值: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
         running_loss = 0.0
 print('训练结束.....')
+
+print("尝试预测：")
+outputs = net(Variable(torch.randn(1, 1, 32, 32)))
+_, predicted = torch.max(outputs.data, 1)
+print('预测结果: %r' % predicted)
