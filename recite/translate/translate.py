@@ -81,18 +81,27 @@ def translate_youdao(q, app_key, app_secret):
     r1 = ",".join(r1)
 
     if result.get('basic',None):
-        r2 = result['basic']['uk-phonetic']
-        r3 = result['basic']['us-phonetic']
-        r4 = result['basic']['explains']
-        r4 = "\n".join(r4)
+        r2 = result['basic']['us-phonetic']
+        r3 = result['basic']['explains']
+        new_r3 = ""
+        for __r3 in r3:
+            if len(__r3)>8:
+                index = __r3.find("；")
+                if index ==-1:
+                    index = __r3.find(";")
+                if index!=-1:
+                    __r3 = __r3[0:index]
+            new_r3+=__r3+";"
+        r3=new_r3
     else:
-        r2=r3=r4=""
+        r2=r3=""
 
     # print(response.content)
     if r2=="":
-        chinese = "意思:{} \n".format(r1)
+        chinese = "{}\t\t{}".format(q,r1)
     else:
-        chinese = "意思:{} \n发音: 英[{}] 美[{}] \n更多:\n{}".format(r1, r2, r3, r4)
+        chinese = "{}\t\t{} [{}] {}".format(q,r1, r2, r3)
+
     return chinese
 
 
@@ -139,10 +148,9 @@ def main(txt, engine, app_id, app_secret):
             result = translate(line, app_id, app_secret)
             print("翻译：" + line)
             print(result)
-            translate_file.write(line)
-            translate_file.write("\n")
+
             translate_file.write(result)
-            translate_file.write("\n\n")
+            translate_file.write("\n")
         except Exception as e:
             traceback.print_exc()
             print("翻译%s时候出错：%s" % (line,str(e)))
